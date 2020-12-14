@@ -1,0 +1,73 @@
+﻿<Window x:Class="TestCAD.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:TestCAD"
+        mc:Ignorable="d"
+        Title="Вывод фигур" Height="450" Width="800">
+    <Grid x:Name="mainGrid">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <StackPanel Grid.Column="1" Orientation="Vertical">
+            <Button
+                x:Name="buttonInit"
+                Margin="4"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Top"
+                Click="Button_Click_Initialize">
+                Инициализация окна вывода
+            </Button>
+            <Button x:Name="buttonRemoveViewport" Click="ButtonRemove_Click">
+                Удаление окна вывода
+            </Button>
+            <Button
+                x:Name="buttonAdd"
+                Margin="4"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Top"
+                Click="Button_Click_Add"
+                IsEnabled="{Binding EnableButtons}">
+                Добавить куб
+            </Button>
+            <Button
+                x:Name="buttonAddSphere"
+                Margin="4"
+                Click="Button_Click_AddSphere"
+                IsEnabled="{Binding EnableButtons}" Content="Добавить сферу"/>
+            <Button
+                x:Name="buttonAddCylinder"
+                Margin="4"
+                Click="Button_Click_AddCylinder"
+                IsEnabled="{Binding EnableButtons}" Content="Добавить цилиндр"/>
+            <Button  x:Name="buttonAddGlass"
+                Click="Button_Click_AddGlass"
+                Margin="4"
+                IsEnabled="{Binding EnableButtons}" Content="Добавить чашу (вращение)"/>
+            <Button x:Name="buttonAddExtrusion"
+                Click="Button_Click_AddExtrusion"
+                Margin="4"
+                IsEnabled="{Binding EnableButtons}" Content="Добавить крышу (выдавливание)"/>
+            <Button
+                x:Name="buttonRemove"
+                Margin="4"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Top"
+                Click="Button_Click_Remove"
+                IsEnabled="{Binding EnableButtons}">
+                Удалить манипулятор, а потом фигуру
+            </Button>
+            <!--<Button
+                x:Name="buttonEnvironment"
+                Margin="4"
+                Click="buttonEnvironment_Click"
+                IsEnabled="{Binding EnableEnvironmentButtons}">
+                Add Environment
+            </Button>-->
+            <Button x:Name="buttonSceneNode" Margin="4" IsEnabled="{Binding EnableButtons}" Click="buttonSceneNode_Click" Height="24" Content="Вывод сл.фигуры через SceneNode"/>
+            
+        </StackPanel>
+    </Grid>
+</Window>
