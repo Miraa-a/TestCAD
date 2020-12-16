@@ -8,10 +8,24 @@ namespace TestCAD
     class Sphere_Model : BaseModel
     {
         public float Radius { get; set; } = 1;
-
+        /// <summary>
+        /// Добавление сферы.
+        /// </summary>
+        /// <param name="с">
+        /// Центр сферы.
+        /// </param>
+        /// <param name="Radius">
+        /// Радиус сферы.
+        /// </param>
+        /// <param name="thetaDiv">
+        /// The number of divisions around the ellipsoid.
+        /// </param>
+        /// <param name="phiDiv">
+        /// The number of divisions from top to bottom of the ellipsoid.
+        /// </param>
         public override void Update()
         {
-            //Clear
+            //Очитска
             Positions.Clear();
             Indices.Clear();
             Normals.Clear();
@@ -46,7 +60,21 @@ namespace TestCAD
 
             this.AddIndices(index0, phiDiv + 1, thetaDiv + 1, true);
         }
-
+        /// <summary>
+        /// Добавление индексов треугольников.
+        /// </summary>
+        /// <param name="index0">
+        /// Смещение индекса.
+        /// </param>
+        /// <param name="rows">
+        /// The number of rows.
+        /// </param>
+        /// <param name="columns">
+        /// Количество строк.
+        /// </param>
+        /// <param name="isSpherical">
+        /// если флаг в значение true, то создатуся треугольники сверху и снизу (сферическая сетка).
+        /// </param>
         public void AddIndices(int index0, int rows, int columns, bool isSpherical = false)
         {
             for (int i = 0; i < rows - 1; i++)

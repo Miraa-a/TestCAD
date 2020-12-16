@@ -7,6 +7,6 @@ namespace TestCAD
 {
    public class Edge
     {
-        public IntCollection Indices { get; } = new IntCollection();
+        public IntCollection Indices { get; } = new IntCollection();//коллекция индексов ребер фигуры
     }
 }

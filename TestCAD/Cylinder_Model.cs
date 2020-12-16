@@ -11,36 +11,37 @@ namespace TestCAD
         public float Radius { get; set; } = 1;
 
         /// <summary>
-        /// Adds a cylinder to the mesh.
+        /// Создание цилиндра.
         /// </summary>
         /// <param name="point1">
-        /// The first point.
+        /// Точка нижней окружности.
         /// </param>
         /// <param name="point2">
-        /// The second point.
+        /// Точка верхней окружности.
         /// </param>
         /// <param name="Radius">
-        /// The diameters.
+        /// Радиус окружности.
         /// </param>
         /// <param name="thetaDiv">
-        /// The number of divisions around the cylinder.
+        /// Число делений вокруг цилиндра.
         /// </param>
 
-        
+
         public override void Update()
         {
             Vector3 point1 = new Vector3(0, 0, 0);//точка нижней окружности
-            Vector3 point2 = new Vector3(0, 2, 0);//point of the upper circle
-            Vector3 n = point2 - point1;//direction
-            var l = Math.Sqrt(n.X * n.X + n.Y * n.Y + n.Z * n.Z);//length
+            Vector3 point2 = new Vector3(0, 2, 0);//точка верхней окружности
+            Vector3 n = point2 - point1;//направление
+            var l = Math.Sqrt(n.X * n.X + n.Y * n.Y + n.Z * n.Z);//длина
             n.Normalize();
-            int thetaDiv = 32;//the number of divisions around the cylinder
-            var pc = new List<Vector2>();//points
+            int thetaDiv = 32;//число делений вокруг цилиндра
+            var pc = new List<Vector2>();//точки начала и конца двух образующих
             pc.Add(new Vector2(0, 0));
             pc.Add(new Vector2(0, Radius));
             pc.Add(new Vector2((float)l, Radius));
             pc.Add(new Vector2((float)l, 0));
             n.Normalize();
+           // Найти два единичных вектора, ортогональных заданному направлению
             Vector3 u = Vector3.Cross(new Vector3(0, 1, 0), n);
             if (u.LengthSquared() < 1e-3)
             {
@@ -49,6 +50,12 @@ namespace TestCAD
             var v = Vector3.Cross(n, u);
             u.Normalize();
             v.Normalize();
+            /// <summary>
+            ///В классе Helper сосредоточена функция для получения сегмента с окружностью.
+            /// </summary>
+            /// <returns>
+            /// Окружность.
+            /// </returns>
             Helper help = new Helper();
             var circle = help.GetCircle(thetaDiv);
             int index0 = Positions.Count;
@@ -63,6 +70,7 @@ namespace TestCAD
                 {
                     var q1 = point1 + (n * pc[j].X) + (w * pc[j].Y);
                     var q2 = point1 + (n * pc[j + 1].X) + (w * pc[j + 1].Y);
+
                     Positions.Add(new Vector3((float)q1.X, (float)q1.Y, (float)q1.Z));
                     Positions.Add(new Vector3((float)q2.X, (float)q2.Y, (float)q2.Z));
 

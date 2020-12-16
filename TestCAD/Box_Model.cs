@@ -11,9 +11,17 @@ namespace TestCAD
         public float Width { get; set; } = 2; // по Y
         public float Height { get; set; } = 3; // по Z
 
+        /// <summary>
+        /// Добавляет коробку с заданными гранями, выровненными по заданным осям.
+        /// </summary>
+        /// <param name="c">Точка центра куба.</param>
+        /// <param name="Length">Длина коробки вдоль оси X.</param>
+        /// <param name="Width">Длина коробки вдоль оси Y.</param>
+        /// <param name="Height">Длина коробки вдоль оси Z.</param>
+        
         public override void Update()
         {
-            //Clear
+            //Очистка
             Positions.Clear();
             Indices.Clear();
             Normals.Clear();
@@ -27,7 +35,7 @@ namespace TestCAD
             AddCubeFace(c, Vector3.UnitZ, Vector3.UnitY, Height, Length, Width);
             AddCubeFace(c, -Vector3.UnitZ, Vector3.UnitY, Height, Length, Width);
 
-            // add edges
+            // добавление ребер
             AddEdge(0, 1);
             AddEdge(1, 2);
             AddEdge(2, 3);
@@ -44,7 +52,9 @@ namespace TestCAD
             AddEdge(3, 6);
         }
 
-
+        /// <summary>
+        /// Добавление ребра.
+        /// </summary>
         void AddEdge(int i0, int i1)
         {
             var edge = new Edge();
@@ -54,7 +64,27 @@ namespace TestCAD
         }
 
 
-
+        /// <summary>
+        /// Добавление грани куба.
+        /// </summary>
+        /// <param name="center">
+        /// Центр Куба.
+        /// </param>
+        /// <param name="normal">
+        /// Вектор нормали для грани.
+        /// </param>
+        /// <param name="up">
+        /// Вектор вверх для грани.
+        /// </param>
+        /// <param name="dist">
+        /// Расстояние от центра куба до грани.
+        /// </param>
+        /// <param name="width">
+        /// Ширина грани.
+        /// </param>
+        /// <param name="height">
+        /// Высота грани.
+        /// </param>
         void AddCubeFace(Vector3 center, Vector3 normal, Vector3 up, float dist, float width, float height)
         {
             var right = Vector3.Cross(normal, up);
@@ -86,7 +116,7 @@ namespace TestCAD
             Indices.Add(i0 + 3);
             Indices.Add(i0 + 2);
 
-            // add Face
+            // добавление граней
             var face = new Face();
             face.Indices.Add(i0 + 2);
             face.Indices.Add(i0 + 1);
@@ -96,7 +126,7 @@ namespace TestCAD
             face.Indices.Add(i0 + 2);
             Faces.Add(face);
 
-            // add edges
+            // добавление ребер к граням
             var edge = new Edge();
             AddLine(edge, i0 + 0, i0 + 1);
             AddLine(edge, i0 + 1, i0 + 2);
@@ -105,7 +135,7 @@ namespace TestCAD
             face.Edges.Add(edge);
         }
 
-
+        
         static void AddLine(Edge edge, int i0, int i1)
         {
             edge.Indices.Add(i0);
