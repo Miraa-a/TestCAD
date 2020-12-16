@@ -28,8 +28,9 @@ namespace TestCAD
             u.Normalize();
             v.Normalize();
             int thetaDiv = 32;
-            var circle = GetCircle(thetaDiv);
-
+            //var circle = GetCircle(thetaDiv);
+            Helper help = new Helper();
+            var circle = help.GetCircle(thetaDiv);
             int index0 = Positions.Count;
             int n = points.Count;
 
@@ -89,38 +90,6 @@ namespace TestCAD
             }
 
             return u;
-        }
-
-        private IList<Vector2> GetCircle(int thetaDiv, bool closed = false)
-        {
-            Dictionary<int, IList<Vector2>> CircleCache = new Dictionary<int, IList<Vector2>>();
-            Dictionary<int, IList<Vector2>> ClosedCircleCache = new Dictionary<int, IList<Vector2>>();
-            IList<Vector2> circle = null;
-            if ((!closed && !CircleCache.TryGetValue(thetaDiv, out circle)) ||
-                (closed && !ClosedCircleCache.TryGetValue(thetaDiv, out circle)))
-            {
-                circle = new List<Vector2>();
-                if (!closed)
-                {
-                    CircleCache.Add(thetaDiv, circle);
-                }
-                else
-                {
-                    ClosedCircleCache.Add(thetaDiv, circle);
-                }
-                var num = closed ? thetaDiv : thetaDiv - 1;
-                for (int i = 0; i < thetaDiv; i++)
-                {
-                    var theta = Math.PI * 2 * ((float)i / num);
-                    circle.Add(new Vector2((float)Math.Cos(theta), (float)-Math.Sin(theta)));
-                }
-            }
-            IList<Vector2> result = new List<Vector2>();
-            foreach (var point in circle)
-            {
-                result.Add(new Vector2((float)point.X, (float)point.Y));
-            }
-            return result;
         }
     }
 }

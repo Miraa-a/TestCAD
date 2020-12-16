@@ -10,14 +10,31 @@ namespace TestCAD
     {
         public float Radius { get; set; } = 1;
 
+        /// <summary>
+        /// Adds a cylinder to the mesh.
+        /// </summary>
+        /// <param name="point1">
+        /// The first point.
+        /// </param>
+        /// <param name="point2">
+        /// The second point.
+        /// </param>
+        /// <param name="Radius">
+        /// The diameters.
+        /// </param>
+        /// <param name="thetaDiv">
+        /// The number of divisions around the cylinder.
+        /// </param>
+
+        
         public override void Update()
         {
-            Vector3 point1 = new Vector3(0, 0, 0);//origin
-            Vector3 point2 = new Vector3(0, 2, 0);
+            Vector3 point1 = new Vector3(0, 0, 0);//точка нижней окружности
+            Vector3 point2 = new Vector3(0, 2, 0);//point of the upper circle
             Vector3 n = point2 - point1;//direction
-            var l = Math.Sqrt(n.X * n.X + n.Y * n.Y + n.Z * n.Z);
+            var l = Math.Sqrt(n.X * n.X + n.Y * n.Y + n.Z * n.Z);//length
             n.Normalize();
-            int thetaDiv = 32;//
+            int thetaDiv = 32;//the number of divisions around the cylinder
             var pc = new List<Vector2>();//points
             pc.Add(new Vector2(0, 0));
             pc.Add(new Vector2(0, Radius));
@@ -32,7 +49,8 @@ namespace TestCAD
             var v = Vector3.Cross(n, u);
             u.Normalize();
             v.Normalize();
-            var circle = AddCircle(thetaDiv);
+            Helper help = new Helper();
+            var circle = help.GetCircle(thetaDiv);
             int index0 = Positions.Count;
             int counter = pc.Count;
             int totalNodes = (pc.Count - 1) * 2 * thetaDiv;
@@ -75,36 +93,6 @@ namespace TestCAD
                 }
             }
         }
-        private IList<Vector2> AddCircle(int thetaDiv, bool closed = false)
-        {
-            Dictionary<int, IList<Vector2>> CircleCache = new Dictionary<int, IList<Vector2>>();
-            Dictionary<int, IList<Vector2>> ClosedCircleCache = new Dictionary<int, IList<Vector2>>();
-            IList<Vector2> circle = null;
-            if ((!closed && !CircleCache.TryGetValue(thetaDiv, out circle)) ||
-                (closed && !ClosedCircleCache.TryGetValue(thetaDiv, out circle)))
-            {
-                circle = new List<Vector2>();
-                if (!closed)
-                {
-                    CircleCache.Add(thetaDiv, circle);
-                }
-                else
-                {
-                    ClosedCircleCache.Add(thetaDiv, circle);
-                }
-                var num = closed ? thetaDiv : thetaDiv - 1;
-                for (int i = 0; i < thetaDiv; i++)
-                {
-                    var theta = Math.PI * 2 * ((float)i / num);
-                    circle.Add(new Vector2((float)Math.Cos(theta), (float)-Math.Sin(theta)));
-                }
-            }
-            IList<Vector2> result = new List<Vector2>();
-            foreach (var point in circle)
-            {
-                result.Add(new Vector2((float)point.X, (float)point.Y));
-            }
-            return result;
-        }
+       
     }
 }

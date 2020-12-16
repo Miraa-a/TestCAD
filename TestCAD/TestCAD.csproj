@@ -2,20 +2,15 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
+	<Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DemoCorePkg" Version="1.0.0" />
-    <PackageReference Include="HelixToolkit" Version="2.13.1" />
     <PackageReference Include="HelixToolkit.SharpDX.Core" Version="2.13.1" />
     <PackageReference Include="HelixToolkit.Wpf.SharpDX" Version="2.13.1" />
-    <PackageReference Include="PresentationFramework" Version="4.6.0" />
-    <PackageReference Include="SharpDX.D3DCompiler" Version="4.2.0" />
-    <PackageReference Include="SharpDX.Direct3D11" Version="4.2.0" />
     <PackageReference Include="SharpDX.Direct3D9" Version="4.2.0" />
-    <PackageReference Include="SharpDX.Mathematics" Version="4.2.0" />
   </ItemGroup>
 
 </Project>
