@@ -1,6 +1,4 @@
-﻿using HelixToolkit.Wpf.SharpDX;
-using HelixToolkit.Wpf.SharpDX.Model.Scene;
-using SharpDX;
+﻿using SharpDX;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -16,6 +14,9 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using HelixToolkit.SharpDX.Core;
+using HelixToolkit.Wpf.SharpDX;
+using SharpDX.Direct3D11;
 using Color = System.Windows.Media.Color;
 using Colors = System.Windows.Media.Colors;
 
@@ -42,6 +43,7 @@ namespace TestCAD
             viewport = new Viewport3DX();
             viewport.BackgroundColor = Colors.White;
             viewport.ShowCoordinateSystem = true;
+            viewport.EnableOITRendering = true;
             viewport.EffectsManager = manager;
             viewport.Items.Add(new DirectionalLight3D() { Direction = new System.Windows.Media.Media3D.Vector3D(-1, -1, -1) });
             viewport.Items.Add(new AmbientLight3D() { Color = Color.FromArgb(255, 50, 50, 50) });
@@ -49,7 +51,8 @@ namespace TestCAD
             viewport.Items.Add(sceneNodeGroup);
             viewport.Items.Add(new AxisPlaneGridModel3D());
             mainGrid.Children.Add(viewport);
-           
+
+            WindowState = WindowState.Maximized;
         }
 
         private void Button_Click_Add(object sender, RoutedEventArgs e) //добавление куба на сцену
@@ -152,8 +155,10 @@ namespace TestCAD
             group.Children.Add(translate);
             model.Transform = group;          
             var material = materials[rnd.Next(0, materials.Count - 1)];
+            material.DiffuseColor = new Color4(material.DiffuseColor.ToVector3(), 0.5f);
             model.Material = material;
-           
+            model.CullMode = CullMode.Back;
+            model.IsTransparent = true;
 
             return model;
         }

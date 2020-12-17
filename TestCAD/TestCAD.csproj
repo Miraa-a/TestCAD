@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -9,8 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="HelixToolkit.SharpDX.Core" Version="2.13.1" />
-    <PackageReference Include="HelixToolkit.Wpf.SharpDX" Version="2.13.1" />
-    <PackageReference Include="SharpDX.Direct3D9" Version="4.2.0" />
+    <PackageReference Include="HelixToolkit.SharpDX.Core.Wpf" Version="2.13.1" />
   </ItemGroup>
 
 </Project>

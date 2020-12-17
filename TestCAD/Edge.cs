@@ -1,7 +1,7 @@
-﻿using HelixToolkit.Wpf.SharpDX;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using HelixToolkit.SharpDX.Core;
 
 namespace TestCAD
 {
