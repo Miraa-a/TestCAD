@@ -1,5 +1,6 @@
 ﻿using SharpDX;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -31,7 +32,7 @@ namespace TestCAD
         public IList<Vector2> GetCircle(int thetaDiv, bool closed = false)
         {
             
-            IList<Vector2> circle = new List<Vector2>();
+            IList<Vector2>? circle = new List<Vector2>();
             // Если круг не может быть найден в одном из двух словарей (кешэй)
             if ((!closed && !CircleCache.TryGetValue(thetaDiv, out circle)) ||
                 (closed && !ClosedCircleCache.TryGetValue(thetaDiv, out circle)))

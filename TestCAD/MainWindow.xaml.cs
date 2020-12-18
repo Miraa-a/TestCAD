@@ -33,6 +33,8 @@ namespace TestCAD
         private PhongMaterialCollection materials = new PhongMaterialCollection();
         private Random rnd = new Random();
         private System.Windows.Media.Media3D.Transform3DGroup group = new System.Windows.Media.Media3D.Transform3DGroup();
+        DirectionalLight3D _dirLight = new DirectionalLight3D { Direction = new System.Windows.Media.Media3D.Vector3D(-1, -1, -1) };
+        private AmbientLight3D _ambientLight= new AmbientLight3D() { Color = Color.FromArgb(255, 50, 50, 50) };
 
         public MainWindow()
         {
@@ -45,8 +47,12 @@ namespace TestCAD
             viewport.ShowCoordinateSystem = true;
             viewport.EnableOITRendering = true;
             viewport.EffectsManager = manager;
-            viewport.Items.Add(new DirectionalLight3D() { Direction = new System.Windows.Media.Media3D.Vector3D(-1, -1, -1) });
-            viewport.Items.Add(new AmbientLight3D() { Color = Color.FromArgb(255, 50, 50, 50) });
+            viewport.Items.Add(_dirLight);
+            viewport.Items.Add(_ambientLight);
+            viewport.CameraChanged += (s, e) =>
+            {
+                _dirLight.Direction = viewport.Camera.LookDirection;
+            };
             sceneNodeGroup = new SceneNodeGroupModel3D();
             viewport.Items.Add(sceneNodeGroup);
             viewport.Items.Add(new AxisPlaneGridModel3D());
@@ -153,12 +159,18 @@ namespace TestCAD
             
             group.Children.Add(scale);
             group.Children.Add(translate);
-            model.Transform = group;          
-            var material = materials[rnd.Next(0, materials.Count - 1)];
-            material.DiffuseColor = new Color4(material.DiffuseColor.ToVector3(), 0.5f);
-            model.Material = material;
+            model.Transform = group;
+            //var material = materials[rnd.Next(0, materials.Count - 1)];
+            //var alpha = 0.3f;
+            //material.AmbientColor = new Color4(material.AmbientColor.ToVector3(), alpha);
+            //material.DiffuseColor = new Color4(material.DiffuseColor.ToVector3(), alpha);
+            //material.EmissiveColor = new Color4(material.EmissiveColor.ToVector3(), alpha);
+            //material.SpecularColor = new Color4(material.SpecularColor.ToVector3(), alpha);
+            //model.Material = material;
+            model.Material = PhongMaterials.Red;
             model.CullMode = CullMode.Back;
             model.IsTransparent = true;
+            
 
             return model;
         }
