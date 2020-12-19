@@ -4,52 +4,85 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TestCAD"
+        xmlns:hx="http://helix-toolkit.org/wpf/SharpDX"
+        xmlns:core="clr-namespace:HelixToolkit.SharpDX.Core;assembly=HelixToolkit.SharpDX.Core"
         mc:Ignorable="d"
         Title="Вывод фигур" Height="450" Width="800">
+    <Window.Resources>
+        <core:DefaultEffectsManager x:Key="eff"></core:DefaultEffectsManager>
+    </Window.Resources>
     <Grid x:Name="mainGrid">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
+        <hx:Viewport3DX Name="viewport" 
+                        BackgroundColor ="White"
+                        ShowCoordinateSystem="True"
+                        EnableOITRendering="True"
+                        OITWeightMode ="Linear2"
+                        CameraRotationMode="Turntable"
+                        FXAALevel="Medium"
+                        EffectsManager="{StaticResource eff}"
+                        Grid.Column="0">
+            <hx:AmbientLight3D Color="White"/>
+            <hx:DirectionalLight3D Direction="{Binding ElementName=viewport, Path=Camera.LookDirection}" Color="White" />
+        </hx:Viewport3DX>
         <StackPanel Grid.Column="1" Orientation="Vertical">
+            <CheckBox Name="blueOnlyCheckBox" IsChecked="True" Content="Только синий" Margin="3"/>
             <Button
-                x:Name="buttonAdd"
                 Margin="4"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Top"
                 Click="Button_Click_Add"
-                IsEnabled="{Binding EnableButtons}">
-                Добавить куб
-            </Button>
+                Content="Добавить куб"/>
             <Button
-                x:Name="buttonAddSphere"
                 Margin="4"
                 Click="Button_Click_AddSphere"
-                IsEnabled="{Binding EnableButtons}" Content="Добавить сферу"/>
+                Content="Добавить сферу"/>
             <Button
-                x:Name="buttonAddCylinder"
                 Margin="4"
                 Click="Button_Click_AddCylinder"
-                IsEnabled="{Binding EnableButtons}" Content="Добавить цилиндр"/>
-            <Button  x:Name="buttonAddGlass"
+                Content="Добавить цилиндр"/>
+            <Button 
                 Click="Button_Click_AddGlass"
                 Margin="4"
-                IsEnabled="{Binding EnableButtons}" Content="Добавить чашу (вращение)"/>
-            <Button x:Name="buttonAddExtrusion"
+                Content="Добавить Вращение"/>
+            <Button 
                 Click="Button_Click_AddExtrusion"
                 Margin="4"
-                IsEnabled="{Binding EnableButtons}" Content="Добавить крышу (выдавливание)"/>
-            <Button
-                x:Name="buttonRemove"
-                Margin="4"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Top"
-                Click="Button_Click_Remove"
-                IsEnabled="{Binding EnableButtons}">
-                Удалить выделенные ребра, а потом фигуру
-            </Button>
-            <!--<Button x:Name="buttonSceneNode" Margin="4" IsEnabled="{Binding EnableButtons}" Click="buttonSceneNode_Click" Height="24" Content="Вывод сл.фигуры через SceneNode"/>-->
-            
+                Content="Добавить Выдавливание"/>
+
+            <StackPanel Orientation="Horizontal">
+                <TextBlock >OIT Weight Power:</TextBlock>
+                <TextBlock Text="{Binding ElementName=viewport, Path=OITWeightPower, StringFormat={}{0:#}}" />
+            </StackPanel>
+            <Slider
+                LargeChange="1"
+                Maximum="10"
+                Minimum="0.5"
+                SmallChange="0.1"
+                Value="{Binding ElementName=viewport, Path=OITWeightPower}" />
+            <StackPanel Orientation="Horizontal">
+                <TextBlock >OIT Weight Slope:</TextBlock>
+                <TextBlock  Text="{Binding ElementName=viewport, Path=OITWeightDepthSlope, StringFormat={}{0:#}}" />
+            </StackPanel>
+            <Slider
+                LargeChange="1"
+                Maximum="10"
+                Minimum="1"
+                SmallChange="0.5"
+                Value="{Binding ElementName=viewport, Path=OITWeightDepthSlope}" />
+            <CheckBox IsChecked="{Binding ElementName=viewport, Path=EnableOITRendering}" Content="Enable OIT Rendering" Margin="3"/>
+            <StackPanel Name="opacityTextPanel" Orientation="Horizontal">
+                <TextBlock>Opacity:</TextBlock>
+                <TextBlock Text="{Binding Opacity, StringFormat={}{0:##}}" />
+            </StackPanel>
+            <Slider
+                Name="opacitySlider" 
+                LargeChange="0.01"
+                Maximum="1"
+                Minimum="0"
+                SmallChange="0.01"
+                Value="{Binding Opacity}" />
         </StackPanel>
     </Grid>
 </Window>

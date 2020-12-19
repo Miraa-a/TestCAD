@@ -5,10 +5,17 @@ using System.Text;
 
 namespace TestCAD
 {
-
+    /// <summary>
+    /// Класс цилиндра.
+    /// Содержит в себе набор стандартных свойств для цилиндра (радиус и длину) и переопредленный метод для его построения.
+    /// </summary>
     class Cylinder_Model : BaseModel
     {
+        /// <value>Возвращает и задает значение радиуса.</value>
         public float Radius { get; set; } = 1;
+
+        /// <value>Возвращает и задает значение длины</value>
+        public float Length { get; set; } = 2;
 
         /// <summary>
         /// Создание цилиндра.
@@ -32,16 +39,17 @@ namespace TestCAD
             Vector3 point1 = new Vector3(0, 0, 0);//точка нижней окружности
             Vector3 point2 = new Vector3(0, 2, 0);//точка верхней окружности
             Vector3 n = point2 - point1;//направление
-            var l = Math.Sqrt(n.X * n.X + n.Y * n.Y + n.Z * n.Z);//длина
+            var l = (float)Math.Sqrt(n.X * n.X + n.Y * n.Y + n.Z * n.Z);//длина
+            Length = l;
             n.Normalize();
             int thetaDiv = 32;//число делений вокруг цилиндра
             var pc = new List<Vector2>();//точки начала и конца двух образующих
             pc.Add(new Vector2(0, 0));
             pc.Add(new Vector2(0, Radius));
-            pc.Add(new Vector2((float)l, Radius));
-            pc.Add(new Vector2((float)l, 0));
+            pc.Add(new Vector2(Length, Radius));
+            pc.Add(new Vector2(Length, 0));
             n.Normalize();
-           // Найти два единичных вектора, ортогональных заданному направлению
+            // Найти два единичных вектора, ортогональных заданному направлению
             Vector3 u = Vector3.Cross(new Vector3(0, 1, 0), n);
             if (u.LengthSquared() < 1e-3)
             {
@@ -50,13 +58,8 @@ namespace TestCAD
             var v = Vector3.Cross(n, u);
             u.Normalize();
             v.Normalize();
-            /// <summary>
-            ///В классе Helper сосредоточена функция для получения сегмента с окружностью.
-            /// </summary>
-            /// <returns>
-            /// Окружность.
-            /// </returns>
-            Helper help = new Helper();
+
+            Helper help = new Helper();//В классе Helper сосредоточена функция для получения сегмента с окружностью.
             var circle = help.GetCircle(thetaDiv);
             int index0 = Positions.Count;
             int counter = pc.Count;
@@ -91,6 +94,9 @@ namespace TestCAD
                     int i2 = index0 + ((((i + 1) * rowNodes) + (j * 2)) % totalNodes);
                     int i3 = i2 + 1;
 
+                    //добавление ребер
+                    AddEdge(i1, i3);
+
                     Indices.Add(i1);
                     Indices.Add(i0);
                     Indices.Add(i2);
@@ -98,9 +104,39 @@ namespace TestCAD
                     Indices.Add(i1);
                     Indices.Add(i2);
                     Indices.Add(i3);
+                    //добавление граней
+                    var face = new Face();
+                    face.Indices.Add(i0);
+                    face.Indices.Add(i3);
+
+                    Faces.Add(face);
+
+                    // добавление ребер к граням
+                    var edge = new Edge();
+                    AddLine(edge, i1, i3);
+
+                    face.Edges.Add(edge);
+
                 }
             }
         }
-       
+        /// <summary>
+        /// Добавление ребра.
+        /// </summary>
+        void AddEdge(int i0, int i1)
+        {
+            var edge = new Edge();
+            edge.Indices.Add(i0);
+            edge.Indices.Add(i1);
+            Edges.Add(edge);
+        }
+        /// <summary>
+        /// Добавление ребра к определенной грани.
+        /// </summary>
+        static void AddLine(Edge edge, int i0, int i1)
+        {
+            edge.Indices.Add(i0);
+            edge.Indices.Add(i1);
+        }
     }
 }

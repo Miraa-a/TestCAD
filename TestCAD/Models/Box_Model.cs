@@ -5,10 +5,19 @@ using System.Text;
 
 namespace TestCAD
 {
+    /// <summary>
+    /// Класс коробки.
+    /// Содержит в себе набор стандартных свойств для коробки (длину,ширину и высоту) и переопредленный метод для ее построения.
+    /// </summary>
     class Box_Model : BaseModel
     {
+        /// <value>Возвращает и задает значение длины коробки по Х.</value>
         public float Length { get; set; } = 1; // по X
+
+        /// <value>Возвращает и задает значение длины коробки по Y.</value>
         public float Width { get; set; } = 2; // по Y
+
+        /// <value>Возвращает и задает значение длины коробки по Z.</value>
         public float Height { get; set; } = 3; // по Z
 
         /// <summary>
@@ -18,7 +27,7 @@ namespace TestCAD
         /// <param name="Length">Длина коробки вдоль оси X.</param>
         /// <param name="Width">Длина коробки вдоль оси Y.</param>
         /// <param name="Height">Длина коробки вдоль оси Z.</param>
-        
+
         public override void Update()
         {
             //Очистка
@@ -124,6 +133,7 @@ namespace TestCAD
             face.Indices.Add(i0 + 0);
             face.Indices.Add(i0 + 3);
             face.Indices.Add(i0 + 2);
+
             Faces.Add(face);
 
             // добавление ребер к граням
@@ -132,10 +142,13 @@ namespace TestCAD
             AddLine(edge, i0 + 1, i0 + 2);
             AddLine(edge, i0 + 2, i0 + 3);
             AddLine(edge, i0 + 3, i0 + 0);
+            //AddLine(edge, i0 + 2, i0 + 1);
             face.Edges.Add(edge);
         }
 
-        
+        /// <summary>
+        /// Добавление ребра к определенной грани.
+        /// </summary>
         static void AddLine(Edge edge, int i0, int i1)
         {
             edge.Indices.Add(i0);

@@ -5,9 +5,15 @@ using System.Text;
 
 namespace TestCAD
 {
+    /// <summary>
+    /// Класс сферы.
+    /// Содержит в себе стандратное свойство для сферы (радиус) и переопредленный метод для ее построения.
+    /// </summary>
     class Sphere_Model : BaseModel
     {
+        /// <value>Возвращает и задает значение радиуса.</value>
         public float Radius { get; set; } = 1;
+
         /// <summary>
         /// Добавление сферы.
         /// </summary>
@@ -30,7 +36,7 @@ namespace TestCAD
             Indices.Clear();
             Normals.Clear();
 
-            var c = new Vector3(1,1,1);
+            var c = new Vector3(1, 1, 1);
             int thetaDiv = 32; int phiDiv = 32;
             int index0 = this.Positions.Count;
             var dt = 2 * Math.PI / thetaDiv;
@@ -77,16 +83,23 @@ namespace TestCAD
         /// </param>
         public void AddIndices(int index0, int rows, int columns, bool isSpherical = false)
         {
+            var face = new Face();
             for (int i = 0; i < rows - 1; i++)
             {
                 for (int j = 0; j < columns - 1; j++)
                 {
+
                     int ij = (i * columns) + j;
                     if (!isSpherical || i > 0)
                     {
                         Indices.Add(index0 + ij);
                         Indices.Add(index0 + ij + 1 + columns);
                         Indices.Add(index0 + ij + 1);
+
+                        face.Indices.Add(index0 + ij);
+                        face.Indices.Add(index0 + ij + 1);
+                        face.Indices.Add(index0 + ij + 1 + columns);
+
                     }
 
                     if (!isSpherical || i < rows - 2)
@@ -94,10 +107,16 @@ namespace TestCAD
                         Indices.Add(index0 + ij + 1 + columns);
                         Indices.Add(index0 + ij);
                         Indices.Add(index0 + ij + columns);
+
+                        face.Indices.Add(index0 + ij + columns);
+                        face.Indices.Add(index0 + ij + 1 + columns);
+                        face.Indices.Add(index0 + ij);
                     }
                 }
             }
+            Faces.Add(face);
 
         }
+
     }
 }
