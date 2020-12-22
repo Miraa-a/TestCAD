@@ -12,6 +12,7 @@ namespace TestCAD
     class Sphere_Model : BaseModel
     {
         /// <value>Возвращает и задает значение радиуса.</value>
+        /// //тут
         public float Radius { get; set; } = 1;
 
         /// <summary>
