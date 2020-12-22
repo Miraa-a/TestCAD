@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Media.Animation;
 using System.Windows.Navigation;
 
 namespace TestCAD
@@ -28,9 +29,11 @@ namespace TestCAD
             //bool check = false;
             List<int> index = new List<int>();
             Dictionary<Vector2, int> repeatPoint = Repeat(copy);//проверяем на повторы вторую часть группы без первого элемента
+            List<int> tmp = new List<int>();
+            
             if (check)
             {
-                
+
                 index.Add((-1));
                 foreach (var v in repeatPoint)
                 {
@@ -46,14 +49,21 @@ namespace TestCAD
                     index.Add(-1);
                 }
 
-                for (int i = 0; i < index.Count; i++)
+                for (int i = 1; i < index.Count; i++)
                 {
-                    if (i != index.Count - 1)
+                    if (index[i] != -1)
                     {
-                        if (index[i] == -1)
+                        tmp.Add(index[i]);
+
+                    }
+                    else
+                    {
+                        for (int j = 0; j < tmp.Count - 1; j++)
                         {
-                            p.RemoveAt(index[i + 1]);
+                            p.RemoveAt(tmp[j + 1]);
                         }
+
+                        tmp.Clear();
                     }
                 }
             }
@@ -79,18 +89,24 @@ namespace TestCAD
 
                     index.Add(-1);
                 }
-
-                for (int i = 0; i < index.Count; i++)
+                for (int i = index.Count - 2; i < 0; i++)
                 {
-                    if (i != index[0])
+                    if (index[i] != -1)
                     {
-                        if (index[i] == -1)
+                        tmp.Add(index[i]);
+
+                    }
+                    else
+                    {
+                        for (int j = 0; j < tmp.Count - 1; j++)
                         {
-                            p.RemoveAt(index[i - 1]);
+                            p.RemoveAt(tmp[j + 1]);
                         }
+
+                        tmp.Clear();
                     }
                 }
-               
+
             }
             
             check = false;

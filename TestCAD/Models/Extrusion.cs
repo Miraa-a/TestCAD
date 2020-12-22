@@ -13,7 +13,7 @@ namespace TestCAD
     class Extrusion : BaseModel
     {
         List<Vector2> points { get; set; } = new List<Vector2> {
-            new Vector2(1, 0), new Vector2(0, 2),new Vector2(0, 2),new Vector2(1, 2), new Vector2(0, 0)/*, new Vector2(1, 0)*/
+            new Vector2(1, 0), new Vector2(0, 2),new Vector2(0, 2),new Vector2(1, 2), /*new Vector2(0, 0)*//*, new Vector2(1, 0)*/
              /*new Vector2(1, 1), new Vector2(-1, 1),*/};
         Vector3 axisX { get; set; } = new Vector3(0, -1, 0);
         Vector3 p0 { get; set; } = new Vector3(2, 0, 0);
