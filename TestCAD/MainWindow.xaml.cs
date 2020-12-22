@@ -89,6 +89,8 @@ namespace TestCAD
             LineGeometry3D lineGeom = new() { Positions = m.Positions, Indices = inxs2, };
             LineGeometryModel3D edge = new() { Geometry = lineGeom, Color = Colors.Red, Transform = group };
             viewport.Items.Add(edge);
+
+           
         }
 
         private MeshGeometry3D ToGeometry(BaseModel m)

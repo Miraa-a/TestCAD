@@ -37,7 +37,7 @@ namespace TestCAD
         {
 
             IList<Vector2>? circle = new List<Vector2>();
-            // Если круг не может быть найден в одном из двух словарей (кешэй)
+            // Если круг не может быть найден в одном из двух словарей (кэшей)
             if ((!closed && !CircleCache.TryGetValue(thetaDiv, out circle)) ||
                 (closed && !ClosedCircleCache.TryGetValue(thetaDiv, out circle)))
             {

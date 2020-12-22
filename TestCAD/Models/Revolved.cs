@@ -5,11 +5,30 @@ using System.Text;
 
 namespace TestCAD
 {
+    /// <summary>
+    /// Класс операции вращения.
+    /// Содержит в себе набор точек, которые определяют x-расстояние от начала координат вдоль оси вращения и координаты y-радиус, начало оси вращения,
+    /// направление оси вращения и переопределенный метод для его построения.
+    /// </summary>
     class Revolved : BaseModel
     {
+        /// <summary>
+        /// Добавляет поверхность вращения.
+        /// </summary>
+        /// <param name="points">
+        /// Точки (координаты x-расстояние от начала координат вдоль оси вращения, координаты y-радиус) 
+        /// </param>
+        /// <param name="origin">
+        /// Начало оси вращения.
+        /// </param>
+        /// <param name="direction">
+        /// Направление оси вращения.
+        /// </param>
+
+
         public List<Vector2> points { get; set; } = new List<Vector2>  {
-            new Vector2(0, 0.4f) , new Vector2(0.06f, 0.36f) //, 
-            //new Vector2(0.1f, 0.1f), new Vector2(0.34f, 0.1f),
+            new Vector2(0, 0.5f) , new Vector2(0.5f, 0.5f) , 
+            new Vector2(0.3f, 0.5f)//, new Vector2(0.34f, 0.1f),
             //new Vector2(0.4f, 0.14f), new Vector2(0.5f, 0.5f),
             /*new Vector2(0.7f, 0.56f), new Vector2(1, 0.46f) */};
         public Vector3 origin { get; set; } = new Vector3(0, 0, 0);
@@ -18,16 +37,11 @@ namespace TestCAD
 
         public override void Update()
         {
-            //if (points[0] != points[points.Count - 1])
-            //{
-            //    throw new ArgumentException(String.Format("Контур не замкнут"));
-            //}
-            //else
-            //{
+            
             points = Check_Mistakes.strException(points);
             direction.Normalize();
 
-            // Find two unit vectors orthogonal to the specified direction
+            // Найти два единичных вектора, перпендикулярных заданному направлению
 
             var u = FindAnyPerpendicular(direction);
             Vector3 tmp = direction;
@@ -35,7 +49,7 @@ namespace TestCAD
             u.Normalize();
             v.Normalize();
             int thetaDiv = 32;
-            //var circle = GetCircle(thetaDiv);
+           
             Helper help = new Helper();
             var circle = help.GetCircle(thetaDiv);
             int index0 = Positions.Count;
@@ -43,7 +57,8 @@ namespace TestCAD
 
             int totalNodes = (points.Count - 1) * 2 * thetaDiv;
             int rowNodes = (points.Count - 1) * 2;
-
+            var face = new Face();
+            var edge = new Edge();
             for (int i = 0; i < thetaDiv; i++)
             {
                 var w = (v * circle[i].X) + (u * circle[i].Y);
@@ -85,11 +100,22 @@ namespace TestCAD
                     Indices.Add(i2);
                     Indices.Add(i3);
 
+                    face.Indices.Add(i1);
+                    face.Indices.Add(i3);
+                    face.Indices.Add(i0);
+                    face.Indices.Add(i2);
+
                     AddEdge(i1, i3);
                     AddEdge(i0, i2);
+                    AddLine(edge, i1, i3);
+                    AddLine(edge, i0, i2);
+                 
                 }
                 //}
             }
+            Faces.Add(face);
+            face.Edges.Add(edge);
+
         }
         private Vector3 FindAnyPerpendicular(Vector3 n)
         {

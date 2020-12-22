@@ -5,14 +5,38 @@ using System.Text;
 
 namespace TestCAD
 {
+    /// <summary>
+    /// Класс операции выдавливания.
+    /// Содержит в себе набор точек, которые определяют контур выдавливания,ось по направлению которой выдавливать,
+    /// начало выдавленной поверхности, конец выдавленной поверхности и переопределенный метод для его построения.
+    /// </summary>
     class Extrusion : BaseModel
     {
         List<Vector2> points { get; set; } = new List<Vector2> {
-            new Vector2(1, 0), new Vector2(0, 2),new Vector2(0, 2),new Vector2(0, 2)/*, new Vector2(1, 0)*//*, new Vector2(1, 0)*/
+            new Vector2(1, 0), new Vector2(0, 2),new Vector2(0, 2),new Vector2(1, 2), new Vector2(0, 0)/*, new Vector2(1, 0)*/
              /*new Vector2(1, 1), new Vector2(-1, 1),*/};
         Vector3 axisX { get; set; } = new Vector3(0, -1, 0);
         Vector3 p0 { get; set; } = new Vector3(2, 0, 0);
         Vector3 p1 { get; set; } = new Vector3(-2, 0, 0);
+
+        /// <summary>
+        /// Добавляет выдавленную поверхность указанной кривой.
+        /// </summary>
+        /// <param name="points">
+        /// 2D-точки, описывающие контур для выдавливания.
+        /// </param>
+        /// <param name="xaxis">
+        /// Ось по направлению которой выдавливать.
+        /// </param>
+        /// <param name="p0">
+        /// Начало выдавленной поверхности.
+        /// </param>
+        /// <param name="p1">
+        /// Конец выдавленной поверхности.
+        /// </param>
+        /// <remarks>
+        /// axisY - Ось определяется векторным произведением между указанной осью x и вектором начала координат p1.
+        /// </remarks>
         public override void Update()
         {
             //Clear
@@ -43,6 +67,7 @@ namespace TestCAD
 
             }
             var face = new Face();
+            var edge = new Edge();
             int n = points.Count - 1;
             for (int i = 0; i < n; i++)
             {
@@ -50,7 +75,7 @@ namespace TestCAD
                 int i1 = i0 + 1;
                 int i2 = i0 + 3;
                 int i3 = i0 + 2;
-
+                int i4 = i0 + 4;
                 Indices.Add(i0);
                 Indices.Add(i1);
                 Indices.Add(i2);
@@ -58,27 +83,29 @@ namespace TestCAD
                 Indices.Add(i2);
                 Indices.Add(i3);
                 Indices.Add(i0);
-                //face.Indices.Add(i0+i1+i2);
-                //face.Indices.Add(i2+i3+i0);
-                //face.Indices.Add(i2);
-                //face.Indices.Add(i3);
+               
+                face.Indices.Add(i0);
+                face.Indices.Add(i3);
+                face.Indices.Add(i1);
+                face.Indices.Add(i2);
+               
+
 
                 AddEdge(i0, i3);
                 AddEdge(i1, i2);
                 AddEdge(i1, i0);
                 AddEdge(i2, i3);
+                
+                AddLine(edge, i0, i3);
+                AddLine(edge, i1, i2);
+                AddLine(edge, i1, i0);
+                AddLine(edge, i2, i3);
+
             }
 
-            //face.Indices.Add(i0);
-            //face.Indices.Add(i3);
 
-            //Faces.Add(face);
-
-            // добавление ребер к граням
-            //var edge = new Edge();
-            //AddLine(edge, i1, i3);
-
-            //face.Edges.Add(edge);
+            Faces.Add(face);
+            face.Edges.Add(edge);
 
 
         }
@@ -89,10 +116,10 @@ namespace TestCAD
             edge.Indices.Add(i1);
             Edges.Add(edge);
         }
-        //static void AddLine(Edge edge, int i0, int i1)
-        //{
-        //    edge.Indices.Add(i0);
-        //    edge.Indices.Add(i1);
-        //}
+        static void AddLine(Edge edge, int i0, int i1)
+        {
+            edge.Indices.Add(i0);
+            edge.Indices.Add(i1);
+        }
     }
 }

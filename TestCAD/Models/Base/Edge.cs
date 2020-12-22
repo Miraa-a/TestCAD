@@ -12,7 +12,7 @@ namespace TestCAD
     /// </summary>
     public class Edge
     {
-        /// <value>Возвращает значение коллекции идексов ребра оперделенной фигуры.</value>
+        /// <value>Возвращает значение коллекции индексов ребра определенной фигуры.</value>
         public IntCollection Indices { get; } = new IntCollection();
     }
 }
