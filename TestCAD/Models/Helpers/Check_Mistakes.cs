@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using System.Windows.Media.Animation;
 using System.Windows.Navigation;
@@ -18,60 +19,61 @@ namespace TestCAD
         //public static IEnumerable<Vector2> repeatPoint;
 
         public static bool check = false;
+        public static bool closed { get; set; }
         public static List<Vector2> strException(List<Vector2> p)
         {
             if (p[0] != p[p.Count - 1]) //если не замкнут, то замыкаем
             {
-                p.Add(p[0]);
+                closed = false;
 
             }
             var copy = p.Skip(1).Take(p.Count - 1);
             //bool check = false;
             List<int> index = new List<int>();
-            Dictionary<Vector2, int> repeatPoint = Repeat(copy);//проверяем на повторы вторую часть группы без первого элемента
+            //Dictionary<Vector2, int> repeatPoint = Repeat(copy);//проверяем на повторы вторую часть группы без первого элемента
             List<int> tmp = new List<int>();
             
-            if (check)
-            {
+            //if (check)
+            //{
 
-                index.Add((-1));
-                foreach (var v in repeatPoint)
-                {
-                    for (int i = 0; i < p.Count; i++)
-                    {
-                        if (p[i] == v.Key)
-                        {
-                            index.Add(i);
-                        }
+            //    index.Add((-1));
+            //    foreach (var v in repeatPoint)
+            //    {
+            //        for (int i = 0; i < p.Count; i++)
+            //        {
+            //            if (p[i] == v.Key)
+            //            {
+            //                index.Add(i);
+            //            }
 
-                    }
+            //        }
 
-                    index.Add(-1);
-                }
+            //        index.Add(-1);
+            //    }
 
-                for (int i = 1; i < index.Count; i++)
-                {
-                    if (index[i] != -1)
-                    {
-                        tmp.Add(index[i]);
+            //    for (int i = 1; i < index.Count; i++)
+            //    {
+            //        if (index[i] != -1)
+            //        {
+            //            tmp.Add(index[i]);
 
-                    }
-                    else
-                    {
-                        for (int j = 0; j < tmp.Count - 1; j++)
-                        {
-                            p.RemoveAt(tmp[j + 1]);
-                        }
+            //        }
+            //        else
+            //        {
+            //            for (int j = 0; j < tmp.Count - 1; j++)
+            //            {
+            //                p.RemoveAt(tmp[j + 1]);
+            //            }
 
-                        tmp.Clear();
-                    }
-                }
-            }
+            //            tmp.Clear();
+            //        }
+            //    }
+            //}
 
-            index.Clear();
-            check = false;
-            copy = p.Take(p.Count - 1);
-            repeatPoint = Repeat(copy);
+            //index.Clear();
+            //check = false;
+            copy = p/*.Take(p.Count - 1)*/;
+            Dictionary<Vector2, int> repeatPoint = Repeat(copy);
             //проверяем на повторы первую часть группы без последнего элемента
             if (check)
             {
@@ -111,7 +113,7 @@ namespace TestCAD
             
             check = false;
             
-            if (p.Count <= 3)//проверка контура на количество точек
+            if (p.Count < 3)//проверка контура на количество точек
             {
                 throw new ArgumentException(String.Format("Сейчас точек {0} недостаточно {1} точек", p.Count,
                     4 - p.Count));
