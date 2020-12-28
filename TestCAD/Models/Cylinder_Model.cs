@@ -15,7 +15,7 @@ namespace TestCAD
         public float Radius { get; set; } = 1;
 
         /// <value>Возвращает и задает значение длины</value>
-        public float Length { get; set; } = 2;
+        public float Length { get; set; } = 10;
 
         /// <summary>
         /// Создание цилиндра.

@@ -49,7 +49,7 @@ namespace TestCAD
         }
         private void Button_Click_AddCylinder(object sender, RoutedEventArgs e) //добавление цилиндра на сцену
         {
-            VisualizeFigure(new Cylinder_Model() { Length = 10});
+            VisualizeFigure(new Cylinder_Model());
         }
         private void Button_Click_AddGlass(object sender, RoutedEventArgs e) //добавление чаши на сцену
         {
@@ -61,7 +61,7 @@ namespace TestCAD
             VisualizeFigure(new Extrusion());
         }
 
-        private void VisualizeFigure(BaseModel m)
+        public void VisualizeFigure(BaseModel m)
         {
             // визуализируем фигуру
             m.Update();
@@ -78,7 +78,7 @@ namespace TestCAD
             var material = blueOnlyCheckBox.IsChecked == true ? PhongMaterials.Blue : materials[rnd.Next(0, materials.Count - 1)];
             material.DiffuseColor = new Color4(material.DiffuseColor.ToVector3(), colorAlpha);
             model.Material = material;
-            //model.CullMode = CullMode.Back;
+            model.CullMode = CullMode.Back;
             model.IsTransparent = true;
             viewport.Items.Add(model);
 
@@ -90,14 +90,7 @@ namespace TestCAD
             LineGeometryModel3D edge = new() { Geometry = lineGeom, Color = Colors.Red, Transform = group };
             viewport.Items.Add(edge);
 
-            //var inxs3 = new IntCollection();
-            //m.Faces.ForEach(x => inxs3.AddAll(x.Indices));
-            ////m.Faces.ForEach(x => x.Edges.ForEach(x2 => inxs2.AddAll(x2.Indices)));
-            //MeshGeometry3D lineGeom3 = new() { Positions = m.Positions, Indices = inxs3, };
-            //MeshGeometryModel3D edge3 = new() { Geometry = lineGeom3, Material = PhongMaterials.Black, Transform = group };
-            //viewport.Items.Add(edge3);
-
-
+           
         }
 
         private MeshGeometry3D ToGeometry(BaseModel m)
