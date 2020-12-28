@@ -15,7 +15,7 @@ namespace TestCAD
     /// Содержит в себе набор точек, которые определяют контур выдавливания,ось по направлению которой выдавливать,
     /// начало выдавленной поверхности, конец выдавленной поверхности и переопределенный метод для его построения.
     /// </summary>
-    class Extrusion : BaseModel
+    public class Extrusion : BaseModel
     {
         List<Vector2> points { get; set; } = new() {new Vector2(0, 0),  new Vector2(0, 2), new Vector2(1, 2), new(1, 0), };
         float Length { get; set; } = 5;
