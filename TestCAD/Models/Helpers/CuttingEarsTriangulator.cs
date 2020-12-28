@@ -8,6 +8,7 @@
 // --------------------------------------------------------------------------------------------------------------------
 
 using HelixToolkit.Wpf.SharpDX.Core;
+using TestCAD;
 
 namespace HelixToolkit.Wpf
 {
@@ -67,6 +68,9 @@ namespace HelixToolkit.Wpf
                 {
                     V[v] = v;
                 }
+
+                //Extrusion e = new Extrusion();
+                //e.rev = true;
             }
             else
             {
@@ -74,6 +78,8 @@ namespace HelixToolkit.Wpf
                 {
                     V[v] = (n - 1) - v;
                 }
+                //Extrusion e = new Extrusion();
+                //e.rev = false;
             }
 
             int nv = n;
@@ -145,7 +151,7 @@ namespace HelixToolkit.Wpf
         /// </summary>
         /// <param name="contour">The contour.</param>
         /// <returns>The area.</returns>
-        private static double Area(IList<Point> contour)
+        public static double Area(IList<Point> contour)
         {
             int n = contour.Count;
             double area = 0.0;
@@ -153,7 +159,6 @@ namespace HelixToolkit.Wpf
             {
                 area += (contour[p].X * contour[q].Y) - (contour[q].X * contour[p].Y);
             }
-
             return area * 0.5f;
         }
 

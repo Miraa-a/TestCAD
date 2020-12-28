@@ -29,12 +29,12 @@ namespace HelixToolkit.Wpf.SharpDX.Core
         /// <summary>
         /// Using with caustious(Array Length >= List.Count).
         /// </summary>
-        public T[] Array
-        {
-            get
-            {
-                return this.GetInternalArray();
-            }
-        }
+        //public T[] Array
+        //{
+        //    get
+        //    {
+        //        return this.GetInternalArray();
+        //    }
+        //}
     }
 }
