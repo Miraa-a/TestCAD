@@ -20,7 +20,7 @@ namespace TestCAD.Models
             new() { new(1, 0), new Vector2(1, 2), new Vector2(0, 2), new Vector2(0, 0), };
         //List<Vector2> points { get; set; } = new() { new(0, 0), new Vector2(0, 1), new Vector2(2, 1), new Vector2(2, 0), };
         float Length { get; set; } = 5;
-        double Angle { get; set; } = -25;
+        double Angle { get; set; } = -23;
 
 
         public override void Update()
@@ -29,7 +29,11 @@ namespace TestCAD.Models
             Positions.Clear();
             Indices.Clear();
             Normals.Clear();
-            
+            if (Angle > -24 && Angle < 0)
+            {
+                Error = true;
+                ErrorStr = "Не верный угол, ребра пересекаются";
+            }
             points = Check_Mistakes.strException(points);
             var inxs = CuttingEarsTriangulator.Triangulate(points); //триангулировали контур. 
             int inxCount = points.Count;
@@ -131,7 +135,7 @@ namespace TestCAD.Models
 
                 AddFace2(i0, ip0, i1, ip1, n);
             }
-
+           
 
         }
 
@@ -187,6 +191,7 @@ namespace TestCAD.Models
             AddEdge(face.Edges, a1, ap1);
             AddEdge(face.Edges, ap1, ap0);
             AddEdge(face.Edges, ap0, a0);
+
         }
 
         private void AddFace(ExposedArrayList<int> inxs, int inxCount, bool isReverse = true)
@@ -214,7 +219,10 @@ namespace TestCAD.Models
                 face.Indices.Add(i2);
             }
 
+            
             Faces.Add(face);
+            
+
             for (int i = 0; i < inxs.Count - 1; i++)
             {
                 AddEdge(Edges, inxs[i] + inxCount, inxs[i + 1] + inxCount);

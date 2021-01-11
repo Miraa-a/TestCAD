@@ -1,8 +1,11 @@
 ﻿using SharpDX;
 using System;
 using System.ComponentModel;
+using System.Net.Mime;
 using System.Runtime.CompilerServices;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Media.Media3D;
 using HelixToolkit.SharpDX.Core;
 using HelixToolkit.Wpf.SharpDX;
@@ -31,7 +34,7 @@ namespace TestCAD
             sceneNodeGroup = new SceneNodeGroupModel3D();
             viewport.Items.Add(sceneNodeGroup);
             viewport.Items.Add(new AxisPlaneGridModel3D());
-
+            
             WindowState = WindowState.Maximized;
 
             var opacityHelper = new OpacityHelper(viewport);
@@ -67,6 +70,7 @@ namespace TestCAD
         }
         public void VisualizeFigure(BaseModel m)
         {
+           
             // визуализируем фигуру
             m.Update();
             var tmp = ToGeometry(m);
@@ -76,15 +80,23 @@ namespace TestCAD
             group.Children.Add(new ScaleTransform3D(5, 5, 5));
             group.Children.Add(new TranslateTransform3D(rnd.NextDouble(-20, 20), rnd.NextDouble(0, 15), rnd.NextDouble(-20, 20)));
             model.Transform = group;
-
-            // определяем различные цвета
-            var colorAlpha = 1.0f;
-            var material = blueOnlyCheckBox.IsChecked == true ? PhongMaterials.Blue : materials[rnd.Next(0, materials.Count - 1)];
-            material.DiffuseColor = new Color4(material.DiffuseColor.ToVector3(), colorAlpha);
-            model.Material = material;
-            //model.CullMode = CullMode.Back;
-            model.IsTransparent = true;
-            viewport.Items.Add(model);
+            if (m.Error)
+            {
+                MessageBoxResult result = MessageBox.Show(m.ErrorStr);
+            }
+            else
+            {
+                // определяем различные цвета
+                var colorAlpha = 1.0f;
+                var material = blueOnlyCheckBox.IsChecked == true
+                    ? PhongMaterials.Blue
+                    : materials[rnd.Next(0, materials.Count - 1)];
+                material.DiffuseColor = new Color4(material.DiffuseColor.ToVector3(), colorAlpha);
+                model.Material = material;
+                //model.CullMode = CullMode.Back;
+                model.IsTransparent = true;
+                viewport.Items.Add(model);
+            }
 
             // визуализируем ребра
             var inxs2 = new IntCollection();
@@ -112,6 +124,7 @@ namespace TestCAD
             return model;
         }
 
+       
 
     }
 

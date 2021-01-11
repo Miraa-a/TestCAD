@@ -26,6 +26,12 @@ namespace TestCAD
 
         /// <value>Возвращает все ребра фигуры.</value>
         public List<Edge> Edges { get; } = new List<Edge>();
+        
+        /// <value>Флаг присутствия ошибки</value>
+        public bool Error { get; set; } = false;
+        
+        /// <value>Сообщение об ошибке</value>
+        public string ErrorStr { get; set; } = "";
 
         /// <summary>
         /// Абстрактный метод для построения каждой из фигур, 

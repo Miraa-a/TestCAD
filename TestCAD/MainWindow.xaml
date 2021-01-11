@@ -87,6 +87,9 @@
                 Minimum="0"
                 SmallChange="0.01"
                 Value="{Binding Opacity}" />
+
         </StackPanel>
+        
+        
     </Grid>
 </Window>
