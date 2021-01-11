@@ -7,6 +7,7 @@ using System.Windows.Media.Media3D;
 using HelixToolkit.SharpDX.Core;
 using HelixToolkit.Wpf.SharpDX;
 using SharpDX.Direct3D11;
+using TestCAD.Models;
 using Colors = System.Windows.Media.Colors;
 using MeshGeometry3D = HelixToolkit.SharpDX.Core.MeshGeometry3D;
 
@@ -60,7 +61,10 @@ namespace TestCAD
         {
             VisualizeFigure(new Extrusion());
         }
-
+        private void Button_Click_AddExtrusionAngel(object sender, RoutedEventArgs e) //добавление выдавливания на сцену
+        {
+            VisualizeFigure(new Extrusion_with_angle());
+        }
         public void VisualizeFigure(BaseModel m)
         {
             // визуализируем фигуру
@@ -78,7 +82,7 @@ namespace TestCAD
             var material = blueOnlyCheckBox.IsChecked == true ? PhongMaterials.Blue : materials[rnd.Next(0, materials.Count - 1)];
             material.DiffuseColor = new Color4(material.DiffuseColor.ToVector3(), colorAlpha);
             model.Material = material;
-            model.CullMode = CullMode.Back;
+            //model.CullMode = CullMode.Back;
             model.IsTransparent = true;
             viewport.Items.Add(model);
 
