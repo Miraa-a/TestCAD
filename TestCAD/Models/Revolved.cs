@@ -38,7 +38,7 @@ namespace TestCAD
         public override void Update()
         {
             
-            points = Check_Mistakes.strException(points);
+            //points = Check_Mistakes.strException(points,ErrorStr);
             direction.Normalize();
 
             // Найти два единичных вектора, перпендикулярных заданному направлению

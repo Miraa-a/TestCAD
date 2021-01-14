@@ -17,9 +17,19 @@ namespace TestCAD
     public class Extrusion : BaseModel
     {
         //List<Vector2> points { get; set; } = new() { new Vector2(0, 0), new Vector2(0, 2), new Vector2(1, 2), new(1, 0), };
-         //List<Vector2> points { get; set; } = new() { new(0, 0), new Vector2(0, 1),  new Vector2(2, 1), new Vector2(2, 0), };
+        //List<Vector2> points { get; set; } = new() { new(0, 0), new Vector2(0, 1),  new Vector2(2, 1), new Vector2(2, 0), };
          List<Vector2> points { get; set; } = new() { new(1, 0), new Vector2(1, 2), new Vector2(0, 2), new Vector2(0, 0), };
-        
+        //List<Vector2> points { get; set; } = new()
+        //{
+        //    new(3, 0),
+        //    new Vector2(3, 2),
+        //    new Vector2(2, 2),
+        //    new Vector2(2, 1),
+        //    new Vector2(1, 1),
+        //    new Vector2(1, 2),
+        //    new Vector2(0, 2),
+        //    new Vector2(0, 0)
+        //};
         float Length { get; set; } = 5;
 
         public override void Update()
@@ -29,7 +39,7 @@ namespace TestCAD
             Indices.Clear();
             Normals.Clear();
 
-            points = Check_Mistakes.strException(points);
+            //points = Check_Mistakes.strException(points,ErrorStr);
             var inxs = CuttingEarsTriangulator.Triangulate(points);//триангулировали контур. 
             int inxCount = points.Count;
             bool rev = false;
@@ -112,37 +122,7 @@ namespace TestCAD
 
             int startInx = Positions.Count;
 
-            //Positions.Add(Positions[ip1]);
-            //Normals.Add(n);
-            //int a0 = startInx+3;
-            //Indices.Add(a0);
-            //face.Indices.Add(a0);
-
-            //Positions.Add(Positions[i1]);
-            //Normals.Add(n);
-            //int ap0 = startInx+2;
-            //Indices.Add(ap0);
-            //face.Indices.Add(ap0);
-
-            //Positions.Add(Positions[ip0]);
-            //Normals.Add(n);
-            //int a1 = startInx+1;
-            //Indices.Add(a1);
-            //face.Indices.Add(a1);
-
-
-            //Indices.Add(a1);
-            //face.Indices.Add(a1);
-
-            //Indices.Add(ap0);
-            //face.Indices.Add(ap0);
-
-            //Positions.Add(Positions[i0]);
-            //Normals.Add(n);
-            //int ap1 = startInx ;
-            //Indices.Add(ap1);
-            //face.Indices.Add(ap1);
-            //*****************************************
+           
             Positions.Add(Positions[i0]);
             Normals.Add(n);
             int a0 = startInx;
@@ -210,7 +190,8 @@ namespace TestCAD
             Faces.Add(face);
             for (int i = 0; i < inxs.Count - 1; i++)
             {
-                AddEdge(Edges, inxs[i] + inxCount, inxs[i + 1] + inxCount);
+                AddEdge(Edges, inxs[i]+inxCount, inxs[i + 1] + inxCount);
+                AddEdge(Edges, inxs[i+1] + inxCount, inxs[0] + inxCount);
                 AddEdge(face.Edges, inxs[i] + inxCount, inxs[i + 1] + inxCount);
             }
         }
@@ -232,35 +213,7 @@ namespace TestCAD
         }
 
 
-        //void CreateTriangls(int a, int b, int c, Vector3 n, Dictionary<int, int> pos, Edge edge, Face face)
-        //{
-        //    int i0 = 0;
-        //    int i2 = 0;
-        //    foreach (var v in pos)
-        //    {
-        //        if (a == v.Key)
-        //        {
-        //            Indices.Add(v.Value);
-        //            i0 = v.Value;
-        //        }
-        //        else if (b == v.Key)
-        //        {
-        //            Indices.Add(v.Value);
-
-        //        }
-        //        else if (c == v.Key)
-        //        {
-        //            Indices.Add(v.Value);
-        //            i2 = v.Value;
-        //        }
-        //    }
-        //    face.Indices.Add(a);
-        //    face.Indices.Add(b);
-        //    face.Indices.Add(c);
-
-        //    AddEdge(i2, i0);
-        //    AddLine(edge, i2, i0);
-        //}
+        
 
 
     }
