@@ -18,7 +18,7 @@ namespace TestCAD.Models
     {
         public List<Vector2> points { get; set; } =
             new() { new(1, 0), new Vector2(1, 2), new Vector2(0, 2), new Vector2(0, 0), };
-        
+
         public float Length { get; set; } = -8;
         public double Angle { get; set; } = 0;
 
@@ -29,32 +29,35 @@ namespace TestCAD.Models
             Indices.Clear();
             Normals.Clear();
             string message = "";
-            points = Check_Mistakes.strException(points,ref message);
-            ErrorStr = message;
-            if (ErrorStr == "")
+            points = Check_Mistakes.strException(points, ref message);
+            
+
+            var inxs = CuttingEarsTriangulator.Triangulate(points); //триангулировали контур. 
+            int inxCount = points.Count;
+            bool rev = false;
+            float len;
+            if (CuttingEarsTriangulator.Area(points) > 0f)
             {
-                var inxs = CuttingEarsTriangulator.Triangulate(points); //триангулировали контур. 
-                int inxCount = points.Count;
-                bool rev = false;
-                float len;
-                if (CuttingEarsTriangulator.Area(points) > 0f)
-                {
-                    rev = true;
-                    Angle = Angle * (-1);
-                    //points.Reverse();
-                }
+                rev = true;
+                Angle = Angle * (-1);
+                //points.Reverse();
+            }
 
-                List<Vector2> edg = new List<Vector2>();
-                len = (float) Math.Tan((Angle * Math.PI) / 180) * Length; //вычислили длину
-                points.ForEach(p =>
-                {
-                    Positions.Add(p.ToVector3());
-                    Normals.Add(new Vector3(0, 0, -1));
-                });
-                AddFace(inxCount, inxs, 0, edg, rev);
+            List<Vector2> edg = new List<Vector2>();
+            len = (float)Math.Tan((Angle * Math.PI) / 180) * Length; //вычислили длину
+            points.ForEach(p =>
+            {
+                Positions.Add(p.ToVector3());
+                Normals.Add(new Vector3(0, 0, -1));
+            });
+            AddFace(inxCount, inxs, 0, edg, rev);
 
-
-
+            if (message != "")
+            {
+                ErrorStr = message;
+            }
+            else
+            {
                 List<Vector2> direction = new List<Vector2>();
                 foreach (var q in FindPerp())
                 {
@@ -78,23 +81,23 @@ namespace TestCAD.Models
                     copy[i] = copy[i] + new Vector2(directionpoint[i].X, directionpoint[i].Y);
 
                 }
+
                 Check_Mistakes.strException(copy, ref message);
-                //ErrorStr = Check_Mistakes.Cross_(copy);
-                ErrorStr = message;
-                if (ErrorStr == "")
+                
+                var v = new Vector3(0, 0, Length);
+
+                copy.ForEach(p =>
                 {
-                    
-                    //ErrorStr = Check_Mistakes.CheckAngel(copy, Angle);
-
-                    var v = new Vector3(0, 0, Length);
-                    
-                    copy.ForEach(p =>
-                    {
-                        Positions.Add(p.ToVector3() + v);
-                        Normals.Add(new Vector3(0, 0, 1));
-                    });
-                    AddFace(inxCount, inxs, inxCount, edg, rev);
-
+                    Positions.Add(p.ToVector3() + v);
+                    Normals.Add(new Vector3(0, 0, 1));
+                });
+                AddFace(inxCount, inxs, inxCount, edg, rev);
+                if (message != "")
+                { 
+                    ErrorStr = message;
+                }
+                else
+                {
                     int sign = rev ? -1 : 1;
                     for (int i = 0; i < points.Count - 1; i++)
                     {
@@ -111,13 +114,13 @@ namespace TestCAD.Models
                         int i1 = 0;
                         int ip0 = i0 + points.Count;
                         int ip1 = i1 + points.Count;
-                        var n = GetNormal(ip0, i0, i1) * sign ;
+                        var n = GetNormal(ip0, i0, i1) * sign;
                         AddFace2(i0, ip0, i1, ip1, n, ref edg);
                     }
                     ErrorStr = Check_Mistakes.CheckAngel(edg);
-                    
                 }
             }
+
         }
         private Vector3 GetNormal(int ip0, int i0, int i1)
         {
@@ -127,7 +130,7 @@ namespace TestCAD.Models
             n.Normalize();
             return n;
         }
-        private void AddFace2(int i0, int ip0, int i1, int ip1, Vector3 n, ref List<Vector2>edg)
+        private void AddFace2(int i0, int ip0, int i1, int ip1, Vector3 n, ref List<Vector2> edg)
         {
             var face = new Face();
             int startInx = Positions.Count;
@@ -163,10 +166,10 @@ namespace TestCAD.Models
             AddEdge(face.Edges, a1, ap1);
             AddEdge(face.Edges, ap1, ap0);
             AddEdge(face.Edges, ap0, a0);
-            
+
         }
 
-        private void AddFace(int conturCount, ExposedArrayList<int> inxs, int startPosInx,List<Vector2>edg, bool isReverse = false)
+        private void AddFace(int conturCount, ExposedArrayList<int> inxs, int startPosInx, List<Vector2> edg, bool isReverse = false)
         {
             var face = new Face();
             for (int i = 0; i < inxs.Count; i += 3)
@@ -215,26 +218,26 @@ namespace TestCAD.Models
         }
         List<Vector2> FindPerp()//нашли перпендикуляр
         {
-            
+
             List<Vector2> result = new List<Vector2>();
             List<Vector3> tmp = new List<Vector3>();
-            for (int i = 0; i < points.Count+1; i++)
+            for (int i = 0; i < points.Count + 1; i++)
             {
                 if (i == points.Count)
                 {
                     tmp.Add(new Vector3(points[0].X, points[0].Y, 1));
                 }
                 else
-                { 
-                    tmp.Add(new Vector3(points[i].X , points[i].Y, 1));
+                {
+                    tmp.Add(new Vector3(points[i].X, points[i].Y, 1));
                 }
-                
+
             }
 
-            for (int i = 0; i < tmp.Count-1; i++)
+            for (int i = 0; i < tmp.Count - 1; i++)
             {
                 Vector3 r = Vector3.Cross(tmp[i], tmp[i + 1]);
-                result.Add(new Vector2(r.X,r.Y));
+                result.Add(new Vector2(r.X, r.Y));
             }
             return result;
         }

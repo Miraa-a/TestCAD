@@ -138,41 +138,8 @@ namespace TestCAD
         {
             return a * d - c * b;
         }
-        private static double vector_mult(Vector2 a, Vector2 b) //векторное произведение
-        {
-            return a.X * b.Y - b.X * a.Y;
-        }
-
-        public static string Cross_(List<Vector2> p)
-        {
-            Vector2 tmp = new Vector2();
-            Vector2 tmp1 = new Vector2();
-            List<float> vectormulry = new List<float>();
-            var copy = p;
-            //copy.Add(p[0]);
-            for (int i = 0; i < copy.Count - 2; i += 2)
-            {
-                tmp = copy[i];
-                tmp1 = copy[i + 1];
-                for (int j = i + 1; j < copy.Count - 1; j++)
-                {
-                    vectormulry.Add(Crossing(copy[j + 1].X - copy[j].X, copy[j + 1].Y - copy[j].Y, tmp.X - copy[j].X, tmp.Y - copy[j].Y));
-                    vectormulry.Add(
-                        Crossing(copy[j + 1].X - copy[j].X, copy[j + 1].Y - copy[j].Y, tmp1.X - copy[j].X, tmp1.Y - copy[j].Y));
-                    vectormulry.Add(Crossing(tmp1.X - tmp.X, tmp1.Y - tmp.Y, copy[j].X - tmp.X, copy[j].Y - tmp.Y));
-                    vectormulry.Add(Crossing(tmp1.X - tmp.X, tmp1.Y - tmp.Y, copy[j + 1].X - tmp.X, copy[j + 1].Y - tmp.Y));
-                    if (vectormulry[0] * vectormulry[1] < 0 && vectormulry[2] * vectormulry[3] < 0)
-                    {
-
-                        return "Контур пересекается";
-                    }
-
-                    vectormulry.Clear();
-                }
-            }
-
-            return "";
-        }
+      
+       
         private static bool areCrossing(List<Vector2> p)//проверка на пересечение
         {
 
@@ -203,37 +170,7 @@ namespace TestCAD
             }
 
             return false;
-            //List<float> vectormulry = new List<float>();
-            //for (int i = 0; i < p.Count - 3; i += 4)
-            //{
-            //    vectormulry.Add(Crossing(p[i + 3].X - p[i + 2].X,
-            //        p[i + 3].Y - p[i + 2].Y,
-            //        p[i].X - p[i + 2].X, p[i].Y - p[i + 2].Y));
-
-            //    vectormulry.Add(Crossing(p[i + 3].X - p[i + 2].X,
-            //        p[i + 3].Y - p[i + 2].Y,
-            //        p[i + 1].X - p[i + 2].X, p[i + 1].Y - p[i + 2].Y));
-
-            //    vectormulry.Add(Crossing(p[i + 1].X - p[i].X,
-            //        p[i + 1].Y - p[i].Y,
-            //        p[i + 2].X - p[i].X, p[i + 2].Y - p[i].Y));
-
-            //    vectormulry.Add(Crossing(p[i + 1].X - p[i].X,
-            //        p[i + 1].Y - p[i].Y,
-            //        p[i + 3].X - p[i].X, p[i + 3].Y - p[i].Y));
-
-            //    if (vectormulry[0] * vectormulry[1] < 0 && vectormulry[2] * vectormulry[3] < 0)
-            //    {
-            //        return true;
-            //    }
-
-
-            //    vectormulry.Clear();
-            //}
-
-            //return false;
-
-
+            
         }
     }
 }
