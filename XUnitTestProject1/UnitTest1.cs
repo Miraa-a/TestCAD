@@ -23,7 +23,7 @@ namespace XUnitTestProject1
         [Fact]
         public void Test2()
         {
-            var ex = new Extrusion_with_angle { Angle = -15, Length = 5 };
+            var ex = new Extrusion_with_angle { Angle = -5, Length = 5 };
             ex.points = new() { new(1, 0), new Vector2(1, 2), new Vector2(0, 2), new Vector2(0, 0), };
 
            

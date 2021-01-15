@@ -51,7 +51,7 @@ namespace TestCAD.Models
                     Positions.Add(p.ToVector3());
                     Normals.Add(new Vector3(0, 0, -1));
                 });
-                AddFace(inxCount, inxs, 0,  rev);
+                AddFace(inxCount, inxs, 0, edg, rev);
 
 
 
@@ -79,8 +79,8 @@ namespace TestCAD.Models
 
                 }
                 Check_Mistakes.strException(copy, ref message);
-                ErrorStr = Check_Mistakes.Cross_(copy);
-                
+                //ErrorStr = Check_Mistakes.Cross_(copy);
+                ErrorStr = message;
                 if (ErrorStr == "")
                 {
                     
@@ -93,7 +93,7 @@ namespace TestCAD.Models
                         Positions.Add(p.ToVector3() + v);
                         Normals.Add(new Vector3(0, 0, 1));
                     });
-                    AddFace(inxCount, inxs, inxCount, rev);
+                    AddFace(inxCount, inxs, inxCount, edg, rev);
 
                     int sign = rev ? -1 : 1;
                     for (int i = 0; i < points.Count - 1; i++)
@@ -166,7 +166,7 @@ namespace TestCAD.Models
             
         }
 
-        private void AddFace(int conturCount, ExposedArrayList<int> inxs, int startPosInx, bool isReverse = false)
+        private void AddFace(int conturCount, ExposedArrayList<int> inxs, int startPosInx,List<Vector2>edg, bool isReverse = false)
         {
             var face = new Face();
             for (int i = 0; i < inxs.Count; i += 3)
@@ -195,12 +195,14 @@ namespace TestCAD.Models
             for (int i = 0; i < conturCount - 1; i++)
             {
                 AddEdge(Edges, i + startPosInx, i + 1 + startPosInx);
-                
+                edg.Add(new Vector2(Positions[i + startPosInx].X, Positions[i + startPosInx].Y));
+                edg.Add(new Vector2(Positions[i + 1 + startPosInx].X, Positions[i + 1 + startPosInx].Y));
                 AddEdge(face.Edges, i + startPosInx, i + 1 + startPosInx);
             }
 
             AddEdge(Edges, conturCount - 1 + startPosInx, 0 + startPosInx);
-            
+            edg.Add(new Vector2(Positions[conturCount - 1 + startPosInx].X, Positions[conturCount - 1 + startPosInx].Y));
+            edg.Add(new Vector2(Positions[0 + startPosInx].X, Positions[0 + startPosInx].Y));
             AddEdge(face.Edges, conturCount + startPosInx, 0 + startPosInx);
 
         }
