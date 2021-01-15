@@ -18,7 +18,7 @@ namespace TestCAD
     {
         //List<Vector2> points { get; set; } = new() { new Vector2(0, 0), new Vector2(0, 2), new Vector2(1, 2), new(1, 0), };
         //List<Vector2> points { get; set; } = new() { new(0, 0), new Vector2(0, 1),  new Vector2(2, 1), new Vector2(2, 0), };
-         List<Vector2> points { get; set; } = new() { new(1, 0), new Vector2(1, 2), new Vector2(0, 2), new Vector2(0, 0), };
+        public List<Vector2> points { get; set; } = new() { new(1, 0), new Vector2(1, 2), new Vector2(0, 2), new Vector2(0, 0), };
         //List<Vector2> points { get; set; } = new()
         //{
         //    new(3, 0),
@@ -30,7 +30,7 @@ namespace TestCAD
         //    new Vector2(0, 2),
         //    new Vector2(0, 0)
         //};
-        float Length { get; set; } = 5;
+        public float Length { get; set; } = 5;
 
         public override void Update()
         {
@@ -49,19 +49,13 @@ namespace TestCAD
                 rev = true;
                 points.Reverse();
             }
+
             points.ForEach(p =>
             {
                 Positions.Add(p.ToVector3());
                 Normals.Add(new Vector3(0, 0, -1));
             });
-            if (!rev)
-            {
-                AddFace(inxs, 0,true);
-            }
-            else
-            {
-                AddFace(inxs, 0, false);
-            }
+            AddFace(inxCount, inxs, 0, rev);
 
             var v = new Vector3(0, 0, Length);
             points.ForEach(p =>
@@ -69,14 +63,7 @@ namespace TestCAD
                 Positions.Add(p.ToVector3() + v);
                 Normals.Add(new Vector3(0, 0, 1));
             });
-            if (!rev)
-            {
-                AddFace(inxs, inxCount, false);
-            }
-            else
-            {
-                AddFace(inxs, inxCount, true);
-            }
+            AddFace(inxCount, inxs, inxCount, rev);
 
 
             for (int i = 0; i < points.Count - 1; i++)
@@ -122,7 +109,7 @@ namespace TestCAD
 
             int startInx = Positions.Count;
 
-           
+
             Positions.Add(Positions[i0]);
             Normals.Add(n);
             int a0 = startInx;
@@ -162,14 +149,14 @@ namespace TestCAD
             AddEdge(face.Edges, ap0, a0);
         }
 
-        private void AddFace(ExposedArrayList<int> inxs, int inxCount, bool isReverse = false)
+        private void AddFace(int conturCount, ExposedArrayList<int> inxs, int startPosInx, bool isReverse = false)
         {
             var face = new Face();
             for (int i = 0; i < inxs.Count; i += 3)
             {
-                int i0 = inxs[i] + inxCount;
-                int i1 = inxs[i + 1] + inxCount;
-                int i2 = inxs[i + 2] + inxCount;
+                int i0 = inxs[i] + startPosInx;
+                int i1 = inxs[i + 1] + startPosInx;
+                int i2 = inxs[i + 2] + startPosInx;
 
                 if (isReverse)
                 {
@@ -188,12 +175,15 @@ namespace TestCAD
             }
 
             Faces.Add(face);
-            for (int i = 0; i < inxs.Count - 1; i++)
+            for (int i = 0; i < conturCount - 1; i++)
             {
-                AddEdge(Edges, inxs[i]+inxCount, inxs[i + 1] + inxCount);
-                AddEdge(Edges, inxs[i+1] + inxCount, inxs[0] + inxCount);
-                AddEdge(face.Edges, inxs[i] + inxCount, inxs[i + 1] + inxCount);
+                AddEdge(Edges, i + startPosInx, i + 1 + startPosInx);
+                AddEdge(face.Edges, i + startPosInx, i + 1 + startPosInx);
             }
+
+            AddEdge(Edges, conturCount - 1 + startPosInx, 0 + startPosInx);
+            AddEdge(face.Edges, conturCount + startPosInx, 0 + startPosInx);
+
         }
 
         void AddPosition(List<int> pos, Vector3 n)
@@ -213,7 +203,7 @@ namespace TestCAD
         }
 
 
-        
+
 
 
     }

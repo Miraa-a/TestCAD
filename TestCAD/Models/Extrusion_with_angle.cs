@@ -19,7 +19,7 @@ namespace TestCAD.Models
         public List<Vector2> points { get; set; } =
             new() { new(1, 0), new Vector2(1, 2), new Vector2(0, 2), new Vector2(0, 0), };
         
-        public float Length { get; set; } = 5;
+        public float Length { get; set; } = -8;
         public double Angle { get; set; } = 0;
 
         public override void Update()
@@ -40,18 +40,21 @@ namespace TestCAD.Models
                 if (CuttingEarsTriangulator.Area(points) > 0f)
                 {
                     rev = true;
-                    points.Reverse();
+                    Angle = Angle * (-1);
+                    //points.Reverse();
                 }
 
+                List<Vector2> edg = new List<Vector2>();
                 len = (float) Math.Tan((Angle * Math.PI) / 180) * Length; //вычислили длину
                 points.ForEach(p =>
                 {
                     Positions.Add(p.ToVector3());
                     Normals.Add(new Vector3(0, 0, -1));
                 });
-                AddFace(inxs, 0, rev);
-                
-                
+                AddFace(inxCount, inxs, 0,  rev);
+
+
+
                 List<Vector2> direction = new List<Vector2>();
                 foreach (var q in FindPerp())
                 {
@@ -75,28 +78,32 @@ namespace TestCAD.Models
                     copy[i] = copy[i] + new Vector2(directionpoint[i].X, directionpoint[i].Y);
 
                 }
-                points = Check_Mistakes.strException(copy, ref message);
-                ErrorStr = message;
+                Check_Mistakes.strException(copy, ref message);
+                ErrorStr = Check_Mistakes.Cross_(copy);
+                
                 if (ErrorStr == "")
                 {
-                    ErrorStr = Check_Mistakes.CheckAngel(copy, Angle);
+                    
+                    //ErrorStr = Check_Mistakes.CheckAngel(copy, Angle);
 
                     var v = new Vector3(0, 0, Length);
+                    
                     copy.ForEach(p =>
                     {
                         Positions.Add(p.ToVector3() + v);
-                        Normals.Add(new Vector3(0, 1, 0));
-
+                        Normals.Add(new Vector3(0, 0, 1));
                     });
-                    AddFace(inxs, inxCount, rev);
+                    AddFace(inxCount, inxs, inxCount, rev);
+
+                    int sign = rev ? -1 : 1;
                     for (int i = 0; i < points.Count - 1; i++)
                     {
                         int i0 = i;
                         int i1 = i + 1;
                         int ip0 = i0 + points.Count;
                         int ip1 = i1 + points.Count;
-                        var n = GetNormal(ip0, i0, i1);
-                        AddFace2(i0, ip0, i1, ip1, n);
+                        var n = GetNormal(ip0, i0, i1) * sign;
+                        AddFace2(i0, ip0, i1, ip1, n, ref edg);
                     }
 
                     {
@@ -104,9 +111,11 @@ namespace TestCAD.Models
                         int i1 = 0;
                         int ip0 = i0 + points.Count;
                         int ip1 = i1 + points.Count;
-                        var n = GetNormal(ip0, i0, i1);
-                        AddFace2(i0, ip0, i1, ip1, n);
+                        var n = GetNormal(ip0, i0, i1) * sign ;
+                        AddFace2(i0, ip0, i1, ip1, n, ref edg);
                     }
+                    ErrorStr = Check_Mistakes.CheckAngel(edg);
+                    
                 }
             }
         }
@@ -118,7 +127,7 @@ namespace TestCAD.Models
             n.Normalize();
             return n;
         }
-        private void AddFace2(int i0, int ip0, int i1, int ip1, Vector3 n)
+        private void AddFace2(int i0, int ip0, int i1, int ip1, Vector3 n, ref List<Vector2>edg)
         {
             var face = new Face();
             int startInx = Positions.Count;
@@ -148,41 +157,52 @@ namespace TestCAD.Models
             face.Indices.Add(ap1);
             Faces.Add(face);
             AddEdge(Edges, a0, ap0);
+            edg.Add(new Vector2(Positions[a0].X, Positions[a0].Y));
+            edg.Add(new Vector2(Positions[ap0].X, Positions[ap0].Y));
             AddEdge(face.Edges, a0, a1);
             AddEdge(face.Edges, a1, ap1);
             AddEdge(face.Edges, ap1, ap0);
             AddEdge(face.Edges, ap0, a0);
+            
         }
 
-        private void AddFace(ExposedArrayList<int> inxs, int inxCount, bool isReverse = true)
+        private void AddFace(int conturCount, ExposedArrayList<int> inxs, int startPosInx, bool isReverse = false)
         {
             var face = new Face();
             for (int i = 0; i < inxs.Count; i += 3)
             {
-                int i0 = inxs[i] + inxCount;
-                int i1 = inxs[i + 1] + inxCount;
-                int i2 = inxs[i + 2] + inxCount;
+                int i0 = inxs[i] + startPosInx;
+                int i1 = inxs[i + 1] + startPosInx;
+                int i2 = inxs[i + 2] + startPosInx;
+
                 if (isReverse)
                 {
                     int tmp = i1;
                     i1 = i2;
                     i2 = tmp;
                 }
+
                 Indices.Add(i0);
                 Indices.Add(i1);
                 Indices.Add(i2);
+
                 face.Indices.Add(i0);
                 face.Indices.Add(i1);
                 face.Indices.Add(i2);
             }
+
             Faces.Add(face);
-           
-            for (int i = 0; i < inxs.Count - 1; i++)
+            for (int i = 0; i < conturCount - 1; i++)
             {
-                AddEdge(Edges, inxs[i] + inxCount, inxs[i + 1] + inxCount);
+                AddEdge(Edges, i + startPosInx, i + 1 + startPosInx);
                 
-                AddEdge(face.Edges, inxs[i] + inxCount, inxs[i + 1] + inxCount);
+                AddEdge(face.Edges, i + startPosInx, i + 1 + startPosInx);
             }
+
+            AddEdge(Edges, conturCount - 1 + startPosInx, 0 + startPosInx);
+            
+            AddEdge(face.Edges, conturCount + startPosInx, 0 + startPosInx);
+
         }
         static void AddEdge(List<Edge> edges, int i0, int i1)
         {

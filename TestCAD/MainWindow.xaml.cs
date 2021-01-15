@@ -128,8 +128,8 @@ namespace TestCAD
             return model;
         }
 
-        private OrthographicCamera _ortoCam = new OrthographicCamera() { Position = new Point3D(100, 100, 100), LookDirection = new Vector3D(-1, -1, -1), UpDirection = new Vector3D(0, 1, 0) ,Width = 200, FarPlaneDistance =10000 };
-        private PerspectiveCamera _perspCam = new PerspectiveCamera() { Position = new Point3D(100, 100, 100), LookDirection = new Vector3D(-1, -1, -1), UpDirection = new Vector3D(0, 1, 0), FarPlaneDistance = 10000 };
+        private OrthographicCamera _ortoCam = new OrthographicCamera() { Position = new Point3D(100, 100, 100), LookDirection = new Vector3D(-100, -100, -100), UpDirection = new Vector3D(0, 1, 0) ,Width = 200, FarPlaneDistance =10000 };
+        private PerspectiveCamera _perspCam = new PerspectiveCamera() { Position = new Point3D(100, 100, 100), LookDirection = new Vector3D(-100, -100, -100), UpDirection = new Vector3D(0, 1, 0), FarPlaneDistance = 10000 };
 
         private void IsPerspectiveCheckBox_OnChecked(object sender, RoutedEventArgs e)
         {
