@@ -13,6 +13,8 @@ using SharpDX.Direct3D11;
 using TestCAD.Models;
 using Colors = System.Windows.Media.Colors;
 using MeshGeometry3D = HelixToolkit.SharpDX.Core.MeshGeometry3D;
+using OrthographicCamera = HelixToolkit.Wpf.SharpDX.OrthographicCamera;
+using PerspectiveCamera = HelixToolkit.Wpf.SharpDX.PerspectiveCamera;
 
 namespace TestCAD
 {
@@ -30,6 +32,8 @@ namespace TestCAD
         {
 
             InitializeComponent();
+
+            viewport.Camera = _perspCam;
 
             sceneNodeGroup = new SceneNodeGroupModel3D();
             viewport.Items.Add(sceneNodeGroup);
@@ -124,8 +128,13 @@ namespace TestCAD
             return model;
         }
 
-       
+        private OrthographicCamera _ortoCam = new OrthographicCamera() { Position = new Point3D(100, 100, 100), LookDirection = new Vector3D(-1, -1, -1), UpDirection = new Vector3D(0, 1, 0) ,Width = 200, FarPlaneDistance =10000 };
+        private PerspectiveCamera _perspCam = new PerspectiveCamera() { Position = new Point3D(100, 100, 100), LookDirection = new Vector3D(-1, -1, -1), UpDirection = new Vector3D(0, 1, 0), FarPlaneDistance = 10000 };
 
+        private void IsPerspectiveCheckBox_OnChecked(object sender, RoutedEventArgs e)
+        {
+            viewport.Camera = (bool)isPerspectiveCheckBox.IsChecked! ? _perspCam : _ortoCam;
+        }
     }
 
     /// <summary>
@@ -139,13 +148,13 @@ namespace TestCAD
             this.view = view;
         }
 
-        private float opacity = 1.0f;
+        private float _opacity = 1.0f;
         public float Opacity
         {
-            get => opacity;
+            get => _opacity;
             set
             {
-                if (SetValue(ref opacity, value))
+                if (SetValue(ref _opacity, value))
                 {
                     foreach (var item in view.Items)
                     {

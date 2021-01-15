@@ -24,12 +24,15 @@
                         CameraRotationMode="Turntable"
                         FXAALevel="Medium"
                         EffectsManager="{StaticResource eff}"
+                        ShowCameraInfo="True"
                         Grid.Column="0">
             <hx:AmbientLight3D Color="White"/>
             <hx:DirectionalLight3D Direction="{Binding ElementName=viewport, Path=Camera.LookDirection}" Color="White" />
         </hx:Viewport3DX>
         <StackPanel Grid.Column="1" Orientation="Vertical">
             <CheckBox Name="blueOnlyCheckBox" IsChecked="True" Content="Только синий" Margin="3"/>
+            <CheckBox Name="isPerspectiveCheckBox" IsChecked="True" Content="Перспективная проекция" Margin="3" Click="IsPerspectiveCheckBox_OnChecked"/>
+
             <Button
                 Margin="4"
                 Click="Button_Click_Add"
