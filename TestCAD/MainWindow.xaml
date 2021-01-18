@@ -79,20 +79,24 @@
                 SmallChange="0.5"
                 Value="{Binding ElementName=viewport, Path=OITWeightDepthSlope}" />
             <CheckBox IsChecked="{Binding ElementName=viewport, Path=EnableOITRendering}" Content="Enable OIT Rendering" Margin="3"/>
-            <StackPanel Name="opacityTextPanel" Orientation="Horizontal">
-                <TextBlock>Opacity:</TextBlock>
-                <TextBlock Text="{Binding Opacity, StringFormat={}{0:##}}" />
-            </StackPanel>
-            <Slider
+            <StackPanel Name="dcPanel">
+                <StackPanel Name="opacityTextPanel" Orientation="Horizontal">
+                    <TextBlock>Opacity:</TextBlock>
+                    <TextBlock Text="{Binding Opacity, StringFormat={}{0:##}}" />
+                </StackPanel>
+                <Slider
                 Name="opacitySlider" 
                 LargeChange="0.01"
                 Maximum="1"
                 Minimum="0"
                 SmallChange="0.01"
                 Value="{Binding Opacity}" />
+                <CheckBox  IsChecked="{Binding IsShowWireframe}" Content="WirwFrame" Margin="3" />
+            </StackPanel>
+
 
         </StackPanel>
-        
-        
+
+
     </Grid>
 </Window>

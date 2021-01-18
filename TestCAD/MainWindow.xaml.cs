@@ -42,8 +42,7 @@ namespace TestCAD
             WindowState = WindowState.Maximized;
 
             var opacityHelper = new OpacityHelper(viewport);
-            opacityTextPanel.DataContext = opacityHelper;
-            opacitySlider.DataContext = opacityHelper;
+            dcPanel.DataContext = opacityHelper;
         }
 
         private void Button_Click_Add(object sender, RoutedEventArgs e) //добавление куба на сцену
@@ -128,8 +127,8 @@ namespace TestCAD
             return model;
         }
 
-        private OrthographicCamera _ortoCam = new OrthographicCamera() { Position = new Point3D(100, 100, 100), LookDirection = new Vector3D(-100, -100, -100), UpDirection = new Vector3D(0, 1, 0) ,Width = 200, FarPlaneDistance =10000 };
-        private PerspectiveCamera _perspCam = new PerspectiveCamera() { Position = new Point3D(100, 100, 100), LookDirection = new Vector3D(-100, -100, -100), UpDirection = new Vector3D(0, 1, 0), FarPlaneDistance = 10000 };
+        private OrthographicCamera _ortoCam = new OrthographicCamera() { Position = new Point3D(100, 100, 100), LookDirection = new Vector3D(-100, -100, -100), UpDirection = new Vector3D(0, 1, 0) ,Width = 200, FarPlaneDistance = 1000};
+        private PerspectiveCamera _perspCam = new PerspectiveCamera() { Position = new Point3D(100, 100, 100), LookDirection = new Vector3D(-100, -100, -100), UpDirection = new Vector3D(0, 1, 0)};
 
         private void IsPerspectiveCheckBox_OnChecked(object sender, RoutedEventArgs e)
         {
@@ -163,6 +162,26 @@ namespace TestCAD
                         {
                             m.DiffuseColor = new Color4(m.DiffuseColor.ToVector3(), value);
                             model!.IsTransparent = value < 1;
+                        }
+                    }
+                }
+            }
+        }
+
+        private bool _showWireframe= false;
+        public bool IsShowWireframe
+        {
+            get => _showWireframe;
+            set
+            {
+                if (SetValue(ref _showWireframe, value))
+                {
+                    foreach (var item in view.Items)
+                    {
+                        var model = (item as MeshGeometryModel3D);
+                        if (model != null)
+                        {
+                            model.RenderWireframe = _showWireframe;
                         }
                     }
                 }
