@@ -13,7 +13,10 @@ using Vector3 = SharpDX.Vector3;
 
 namespace TestCAD.Models
 {
-
+    /// <summary>
+    /// Класс операции выдавливания.
+    /// Содержит в себе набор точек, длину на которую выдавливать, угол для раскрытия или сужения фигуры и переопределенный метод для его построения.
+    /// </summary>
     public class Extrusion_with_angle : BaseModel
     {
         public List<Vector2> points { get; set; } =
@@ -28,43 +31,50 @@ namespace TestCAD.Models
             Positions.Clear();
             Indices.Clear();
             Normals.Clear();
-            string message = "";
-            points = Check_Mistakes.strException(points, ref message);
+            ErrorStr = "";
             
-
-            var inxs = CuttingEarsTriangulator.Triangulate(points); //триангулировали контур. 
-            int inxCount = points.Count;
+            string message = "";//строка для вывода сообщения об ошибке
+            
+            //Проверка контура на пересечение, повторение точек и количество точек.
+            //В случае повтора, повторяющиеся точки удаляются оставляя только первое вхождение
+            var copy_Points = CatchingErrors.Correct_Contour(points, ref message);
+            //Триангуляция контура, получение индексов треугольников. 
+            var inxs = CuttingEarsTriangulator.Triangulate(copy_Points); 
+            int inxCount = copy_Points.Count;
             bool rev = false;
             float len;
-            if (CuttingEarsTriangulator.Area(points) > 0f)
+            double copy_Angle = Angle;
+            //Проверка полярности контура (по часовой заполняется или против часовой)
+            if (CuttingEarsTriangulator.Area(copy_Points) > 0f)
             {
                 rev = true;
-                Angle = Angle * (-1);
-                //points.Reverse();
+                copy_Angle = copy_Angle * (-1);
             }
 
-            List<Vector2> edg = new List<Vector2>();
-            len = (float)Math.Tan((Angle * Math.PI) / 180) * Length; //вычислили длину
-            points.ForEach(p =>
+            List<Vector2> edg = new List<Vector2>();//этот список заполняется точками начала и конца ребер. (для проверки пересечения)
+            len = (float)Math.Tan((copy_Angle * Math.PI) / 180) * Length; //вычислили длину
+            //построение задней грани
+            copy_Points.ForEach(p =>
             {
-                Positions.Add(p.ToVector3());
+                Positions.Add(p);
                 Normals.Add(new Vector3(0, 0, -1));
             });
             AddFace(inxCount, inxs, 0, edg, rev);
-
+            //Если есть ошибка, то выведется сообщение с построенной ошибочной гранью до этого
             if (message != "")
             {
                 ErrorStr = message;
             }
             else
             {
+                //список нужен для содержания в нем перпендикуляров к ребру каждой грани
                 List<Vector2> direction = new List<Vector2>();
-                foreach (var q in FindPerp())
+                foreach (var q in FindPerp(copy_Points))//нашли перпендикуляры, которые представляют собой двумерные векторы
                 {
-                    q.Normalize();
-                    direction.Add(q * len);
+                    q.Normalize();//нормализировали каждый вектор
+                    direction.Add(q * len);//умножили каждый вектор на длину (для раскрытия или сужения фигуры)
                 }
-
+                //список нужен для содержания в нем направляющих для каждой точки
                 List<Vector2> directionpoint = new List<Vector2>();
                 for (int i = 0; i < direction.Count; i++)
                 {
@@ -73,40 +83,39 @@ namespace TestCAD.Models
                     else
                         directionpoint.Add(direction[i] + direction[i - 1]);
                 }
-
-                List<Vector2> copy = new List<Vector2>();
-                copy = points;
-                for (int i = 0; i < copy.Count; i++)
+                //к каждой точке прибавляем свою направляющую
+                for (int i = 0; i < copy_Points.Count; i++)
                 {
-                    copy[i] = copy[i] + new Vector2(directionpoint[i].X, directionpoint[i].Y);
-
+                    copy_Points[i] = copy_Points[i] + directionpoint[i].ToVector3();
                 }
-
-                Check_Mistakes.strException(copy, ref message);
-                
+                //Проверка полученного контура на пересечение, повторение точек и количество точек.
+                //В случае повтора, повторяющиеся точки удаляются оставляя только первое вхождение
+                copy_Points = CatchingErrors.Correct_Contour((copy_Points.Select(t=>new Vector2(t.X,t.Y))).ToList(), ref message);
+                //Вектор длины (на сколько нужно выдавить по оси z)
                 var v = new Vector3(0, 0, Length);
-
-                copy.ForEach(p =>
+                //построение лицевой грани
+                copy_Points.ForEach(p =>
                 {
-                    Positions.Add(p.ToVector3() + v);
+                    Positions.Add(p + v);
                     Normals.Add(new Vector3(0, 0, 1));
                 });
                 AddFace(inxCount, inxs, inxCount, edg, rev);
+                //Если есть ошибка, то выведется сообщение с построенной ошибочной гранью до этого
                 if (message != "")
                 { 
                     ErrorStr = message;
                 }
                 else
                 {
-                    int sign = rev ? -1 : 1;
+                    int sign = rev ? -1 : 1;//нужно ли перенаправить полярность? Для этого нужно будет изменить ориентацию нормалей
                     for (int i = 0; i < points.Count - 1; i++)
                     {
                         int i0 = i;
                         int i1 = i + 1;
                         int ip0 = i0 + points.Count;
                         int ip1 = i1 + points.Count;
-                        var n = GetNormal(ip0, i0, i1) * sign;
-                        AddFace2(i0, ip0, i1, ip1, n, ref edg);
+                        var n = GetNormal(ip0, i0, i1) * sign;//вычисление нормали через векторное произведение 
+                        AddFace2(i0, ip0, i1, ip1, n, ref edg);//построение боковых граней через индексы треугольников (кроме нижней)
                     }
 
                     {
@@ -114,14 +123,30 @@ namespace TestCAD.Models
                         int i1 = 0;
                         int ip0 = i0 + points.Count;
                         int ip1 = i1 + points.Count;
-                        var n = GetNormal(ip0, i0, i1) * sign;
-                        AddFace2(i0, ip0, i1, ip1, n, ref edg);
+                        var n = GetNormal(ip0, i0, i1) * sign;//вычисление нормали через векторное произведение
+                        AddFace2(i0, ip0, i1, ip1, n, ref edg);//построение нижней грани через индексы треугольников
                     }
-                    ErrorStr = Check_Mistakes.CheckAngel(edg);
+                    //Проверка угла на корректность, т.е. не пересекаются ли у нас ребра при построении
+                    ErrorStr = CatchingErrors.Check_Angel(edg);
                 }
             }
 
         }
+        /// <summary>
+        /// С помощью векторного произведения находить нормаль
+        /// </summary>
+        /// <param name="ip0">
+        /// Точка начала первого вектора
+        /// </param>
+        /// <param name="i0">
+        /// Точка конца первого и второго вектора
+        /// </param>
+        /// <param name="i1">
+        /// Точка начала второго вектора
+        /// </param>
+        /// <returns>
+        /// Трехмерный вектор нормали
+        /// </returns>
         private Vector3 GetNormal(int ip0, int i0, int i1)
         {
             var v1 = Positions[ip0] - Positions[i0];
@@ -209,6 +234,7 @@ namespace TestCAD.Models
             AddEdge(face.Edges, conturCount + startPosInx, 0 + startPosInx);
 
         }
+        //Создание ребра по двум индексам точек
         static void AddEdge(List<Edge> edges, int i0, int i1)
         {
             var edge = new Edge();
@@ -216,7 +242,7 @@ namespace TestCAD.Models
             edge.Indices.Add(i1);
             edges.Add(edge);
         }
-        List<Vector2> FindPerp()//нашли перпендикуляр
+        List<Vector2> FindPerp(List<Vector3> p)//Поиск перепендикуляра к ребру каждой грани
         {
 
             List<Vector2> result = new List<Vector2>();
@@ -225,11 +251,11 @@ namespace TestCAD.Models
             {
                 if (i == points.Count)
                 {
-                    tmp.Add(new Vector3(points[0].X, points[0].Y, 1));
+                    tmp.Add(p[0]);
                 }
                 else
                 {
-                    tmp.Add(new Vector3(points[i].X, points[i].Y, 1));
+                    tmp.Add(p[i]);
                 }
 
             }

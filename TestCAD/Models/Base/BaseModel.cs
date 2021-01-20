@@ -31,7 +31,7 @@ namespace TestCAD
         public bool Error => !string.IsNullOrEmpty(ErrorStr);
 
         /// <value>Сообщение об ошибке</value>
-        public string ErrorStr { get; set; } = "";
+        public string ErrorStr { get; set; } = null;
 
         /// <summary>
         /// Абстрактный метод для построения каждой из фигур, 

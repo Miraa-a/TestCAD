@@ -62,11 +62,6 @@ namespace TestCAD
         {
             VisualizeFigure(new Revolved());
         }
-
-        private void Button_Click_AddExtrusion(object sender, RoutedEventArgs e) //добавление выдавливания на сцену
-        {
-            VisualizeFigure(new Extrusion());
-        }
         private void Button_Click_AddExtrusionAngel(object sender, RoutedEventArgs e) //добавление выдавливания на сцену
         {
             VisualizeFigure(new Extrusion_with_angle());

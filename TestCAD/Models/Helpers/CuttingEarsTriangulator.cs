@@ -7,7 +7,9 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
+using System.Linq;
 using HelixToolkit.Wpf.SharpDX.Core;
+using SharpDX;
 using TestCAD;
 
 namespace HelixToolkit.Wpf
@@ -47,13 +49,14 @@ namespace HelixToolkit.Wpf
         /// <returns>
         /// collection of triangle points
         /// </returns>
-        public static Int32Collection Triangulate(IList<Point> contour, Int32Collection result = null)
+        public static Int32Collection Triangulate(IList<Vector3> contour, Int32Collection result = null)
         {
+            var p = (contour.Select(t => new Vector2(t.X, t.Y))).ToList();
             // allocate and initialize list of indices in polygon
             if (result == null) result = new Int32Collection();
             else result.Clear();
 
-            int n = contour.Count;
+            int n = p.Count;
             if (n < 3)
             {
                 return result;
@@ -116,7 +119,7 @@ namespace HelixToolkit.Wpf
                     w = 0; // next
                 }
 
-                if (Snip(contour, u, v, w, nv, V))
+                if (Snip(p, u, v, w, nv, V))
                 {
                     int s, t;
 
@@ -151,13 +154,14 @@ namespace HelixToolkit.Wpf
         /// </summary>
         /// <param name="contour">The contour.</param>
         /// <returns>The area.</returns>
-        public static double Area(IList<Point> contour)
+        public static double Area(IList<Vector3> contour)
         {
-            int n = contour.Count;
+            var counter_Point = (contour.Select(t => new Vector2(t.X, t.Y))).ToList();
+            int n = counter_Point.Count;
             double area = 0.0;
             for (int p = n - 1, q = 0; q < n; p = q++)
             {
-                area += (contour[p].X * contour[q].Y) - (contour[q].X * contour[p].Y);
+                area += (counter_Point[p].X * counter_Point[q].Y) - (counter_Point[q].X * counter_Point[p].Y);
             }
             return area * 0.5f;
         }

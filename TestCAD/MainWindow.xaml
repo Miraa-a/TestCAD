@@ -50,13 +50,9 @@
                 Margin="4"
                 Content="Добавить Вращение"/>
             <Button 
-                Click="Button_Click_AddExtrusion"
-                Margin="4"
-                Content="Добавить Выдавливание"/>
-            <Button 
                 Click="Button_Click_AddExtrusionAngel"
                 Margin="4"
-                Content="Добавить выдавливание с углом"/>
+                Content="Добавить выдавливание"/>
 
             <StackPanel Orientation="Horizontal">
                 <TextBlock >OIT Weight Power:</TextBlock>
