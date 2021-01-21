@@ -16,7 +16,7 @@ namespace TestCAD
     /// Содержит в себе методы: корректировки контура, проверки пересечения, проверка количества точек,
     /// проверка на повторы точек и проверка допустимости введенного угла.
     /// </summary>
-    class CatchingErrors
+    class CatchingContourErrors
     {
 
         /// <summary>
@@ -30,23 +30,18 @@ namespace TestCAD
         /// </param>
        
 
-        public static List<Vector3> Correct_Contour(List<Vector2> p, ref string ErrorStr)
+        public static void Correct_Contour(List<Vector2> p, ref string ErrorStr)
         {
             p = Correct_Repeat(p);
             if (Check_CountPoints(p))//проверка контура на количество точек
             {
                 ErrorStr = String.Format("Сейчас точек {0} недостаточно {1} точек", p.Count,
                     4 - p.Count);
-               
             }
-
             if (Check_Crossing(p))
             {
                 ErrorStr = "Контур пересекается";
-                
             }
-            
-            return (p.Select(t=>t.ToVector3())).ToList();
         }
         /// <summary>
         /// Осуществляет проверку контура на количество точек.
@@ -75,7 +70,7 @@ namespace TestCAD
         /// <returns>
         /// Строку с сообщение об ошибке
         /// </returns>
-        public static string Check_Angel(List<Vector2> p)
+        public static string DoEdgesCrosAfterBuildWithAngle(List<Vector2> p)
         {
             string str = "";
             Vector2 tmp = new Vector2();
@@ -87,21 +82,14 @@ namespace TestCAD
                 tmp1 = p[i + 1];
                 for (int j = i + 2; j < p.Count; j += 2)
                 {
-                    vectormulry.Add(Crossing(p[j + 1].X - p[j].X, p[j + 1].Y - p[j].Y, tmp.X - p[j].X, tmp.Y - p[j].Y));
-                    vectormulry.Add(Crossing(p[j + 1].X - p[j].X, p[j + 1].Y - p[j].Y, tmp1.X - p[j].X, tmp1.Y - p[j].Y));
-                    vectormulry.Add(Crossing(tmp1.X - tmp.X, tmp1.Y - tmp.Y, p[j].X - tmp.X, p[j].Y - tmp.Y));
-                    vectormulry.Add(Crossing(tmp1.X - tmp.X, tmp1.Y - tmp.Y, p[j + 1].X - tmp.X, p[j + 1].Y - tmp.Y));
-                    if (vectormulry[0] * vectormulry[1] < 0 && vectormulry[2] * vectormulry[3] < 0)
+                    if (LineCross_(tmp.X, tmp.Y, tmp1.X, tmp1.Y, p[j].X, p[j].Y, p[j + 1].X, p[j + 1].Y))
                     {
                         str = "Угол не верный";
                         return str;
                     }
-                    vectormulry.Clear();
                 }
             }
-
             return str;
-
         }
         /// <summary>
         /// Осуществляет проверку точек на лишние повторы и удаляет все повторы, кроме первого вхождения.
@@ -139,6 +127,18 @@ namespace TestCAD
             return a * d - c * b;
         }
 
+        private static bool LineCross_(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4)
+        {
+            var v1 = Crossing(x4 - x3, y4 - y3, x1 - x3, y1 - y3);
+            var v2 = Crossing(x4 - x3, y4 - y3, x2 - x3, y2 - y3);
+            var v3 = Crossing(x2 - x1, y2 - y1, x3 - x1, y3 - y1);
+            var v4 = Crossing(x2 - x1, y2 - y1, x4 - x1, y4 - y1);
+            if (v1 * v2 < 0 && v3 * v4 < 0)
+            {
+                return true;
+            }
+            return false;
+        }
         /// <summary>
         /// Осуществляет проверку на пересечение. Проверяет все ребра на возможное пересечение.
         /// </summary>
@@ -150,26 +150,19 @@ namespace TestCAD
         /// </returns>
         private static bool Check_Crossing(List<Vector2> p)//проверка на пересечение
         {
-
             Vector2 tmp = new Vector2();
             Vector2 tmp1 = new Vector2();
             List<float> vectormulry = new List<float>();
-            var copy = p;
-            for (int i = 0; i < copy.Count - 2; i += 2)
+            for (int i = 0; i < p.Count - 2; i += 2)
             {
-                tmp = copy[i];
-                tmp1 = copy[i + 1];
-                for (int j = i + 1; j < copy.Count - 1; j++)
+                tmp = p[i];
+                tmp1 = p[i + 1];
+                for (int j = i + 1; j < p.Count - 1; j++)
                 {
-                    vectormulry.Add(Crossing(copy[j + 1].X - copy[j].X, copy[j + 1].Y - copy[j].Y, tmp.X - copy[j].X, tmp.Y - copy[j].Y));
-                    vectormulry.Add(Crossing(copy[j + 1].X - copy[j].X, copy[j + 1].Y - copy[j].Y, tmp1.X - copy[j].X, tmp1.Y - copy[j].Y));
-                    vectormulry.Add(Crossing(tmp1.X - tmp.X, tmp1.Y - tmp.Y, copy[j].X - tmp.X, copy[j].Y - tmp.Y));
-                    vectormulry.Add(Crossing(tmp1.X - tmp.X, tmp1.Y - tmp.Y, copy[j + 1].X - tmp.X, copy[j + 1].Y - tmp.Y));
-                    if (vectormulry[0] * vectormulry[1] < 0 && vectormulry[2] * vectormulry[3] < 0)
+                    if(LineCross_(tmp.X, tmp.Y, tmp1.X, tmp1.Y, p[j].X, p[j].Y, p[j + 1].X, p[j + 1].Y))
                     {
                         return true;
                     }
-                    vectormulry.Clear();
                 }
             }
             return false;

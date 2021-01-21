@@ -51,12 +51,11 @@ namespace HelixToolkit.Wpf
         /// </returns>
         public static Int32Collection Triangulate(IList<Vector3> contour, Int32Collection result = null)
         {
-            var p = (contour.Select(t => new Vector2(t.X, t.Y))).ToList();
             // allocate and initialize list of indices in polygon
             if (result == null) result = new Int32Collection();
             else result.Clear();
 
-            int n = p.Count;
+            int n = contour.Count;
             if (n < 3)
             {
                 return result;
@@ -119,7 +118,7 @@ namespace HelixToolkit.Wpf
                     w = 0; // next
                 }
 
-                if (Snip(p, u, v, w, nv, V))
+                if (Snip(contour, u, v, w, nv, V))
                 {
                     int s, t;
 
@@ -233,7 +232,7 @@ namespace HelixToolkit.Wpf
         /// <param name="n">The n.</param>
         /// <param name="V">The v.</param>
         /// <returns>The snip.</returns>
-        private static bool Snip(IList<Point> contour, int u, int v, int w, int n, int[] V)
+        private static bool Snip(IList<Vector3> contour, int u, int v, int w, int n, int[] V)
         {
             int p;
             float Ax, Ay, Bx, By, Cx, Cy, Px, Py;

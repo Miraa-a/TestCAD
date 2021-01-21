@@ -104,7 +104,26 @@ namespace XUnitTestProject1
             };
             Starter.Show(ex);
         }
-
-
+        [Fact]
+        public void TestExtruEx5()
+        {
+            //ошибка переворота контура
+            var ex = new Extrusion_with_angle() { Angle = 0, Length = 5 };
+            ex.points = new()
+            {
+                //new Vector2(1, 1),
+                //new Vector2(1, 4),
+                //new Vector2(4, 4),
+                //new Vector2(4, 1),
+                new Vector2(2, 2),
+                new Vector2(2, 3),
+                new Vector2(2, 2),
+                new Vector2(3, 3),
+                new Vector2(2, 2),
+                new Vector2(2, 2),
+                new Vector2(3, 2),
+            };
+            Starter.Show(ex);
+        }
     }
 }
