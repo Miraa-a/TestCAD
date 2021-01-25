@@ -114,7 +114,7 @@ namespace TestCAD.Models
                         int ip0 = i0 + copy_Points.Count;
                         int ip1 = i1 + copy_Points.Count;
                         var n = GetNormal(ip0, i0, i1) * sign;//вычисление нормали через векторное произведение 
-                        AddingFrontOrBackFace(i0, ip0, i1, ip1, n, ref edg);//построение боковых граней через индексы треугольников (кроме нижней)
+                        AddingSideFace(i0, ip0, i1, ip1, n, ref edg);//построение боковых граней через индексы треугольников (кроме нижней)
                     }
 
                     {
@@ -123,7 +123,7 @@ namespace TestCAD.Models
                         int ip0 = i0 + copy_Points.Count;
                         int ip1 = i1 + copy_Points.Count;
                         var n = GetNormal(ip0, i0, i1) * sign;//вычисление нормали через векторное произведение
-                        AddingFrontOrBackFace(i0, ip0, i1, ip1, n, ref edg);//построение нижней грани через индексы треугольников
+                        AddingSideFace(i0, ip0, i1, ip1, n, ref edg);//построение нижней грани через индексы треугольников
                     }
                     //Проверка угла на корректность, т.е. не пересекаются ли у нас ребра при построении
                     ErrorStr = CatchingContourErrors.DoEdgesCrosAfterBuildWithAngle(edg);
@@ -154,7 +154,7 @@ namespace TestCAD.Models
             n.Normalize();
             return n;
         }
-        private void AddingFrontOrBackFace(int i0, int ip0, int i1, int ip1, Vector3 n, ref List<Vector2> edg)
+        private void AddingSideFace(int i0, int ip0, int i1, int ip1, Vector3 n, ref List<Vector2> edg)
         {
             var face = new Face();
             int startInx = Positions.Count;

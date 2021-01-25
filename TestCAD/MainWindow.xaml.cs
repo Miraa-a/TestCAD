@@ -99,7 +99,7 @@ namespace TestCAD
             // визуализируем ребра
             var inxs2 = new IntCollection();
             m.Edges.ForEach(x2 => inxs2.AddAll(x2.Indices));
-            //m.Faces.ForEach(x => x.Edges.ForEach(x2 => inxs2.AddAll(x2.Indices)));
+            m.Faces.ForEach(x => x.Edges.ForEach(x2 => inxs2.AddAll(x2.Indices)));
             LineGeometry3D lineGeom = new() { Positions = m.Positions, Indices = inxs2, };
             LineGeometryModel3D edge = new() { Geometry = lineGeom, Color = Colors.Red, Transform = group };
             viewport.Items.Add(edge);
