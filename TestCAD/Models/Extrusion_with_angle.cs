@@ -40,25 +40,16 @@ namespace TestCAD.Models
             CatchingContourErrors.Correct_Contour(points, ref message); 
             var copy_Points = (points.Select(t => t.ToVector3())).ToList();
             //Триангуляция контура, получение индексов треугольников. 
-            var inxs = CuttingEarsTriangulator.Triangulate(copy_Points); 
-            int pointsContourCount = copy_Points.Count;
-            bool rev = false;
+            List<Vector2> edg = new List<Vector2>();
             double copy_Angle = Angle;
+            bool rev = false;
             //Проверка полярности контура (по часовой заполняется или против часовой)
             if (CuttingEarsTriangulator.Area(copy_Points) > 0f)
             {
                 rev = true;
                 copy_Angle = copy_Angle * (-1);
             }
-            List<Vector2> edg = new List<Vector2>();//этот список заполняется точками начала и конца ребер. (для проверки пересечения)
-           // float len = (float)Math.Tan((copy_Angle * Math.PI) / 180) * Length; //вычислили длину
-            //построение задней грани
-            copy_Points.ForEach(p =>
-            {
-                Positions.Add(p);
-                Normals.Add(new Vector3(0, 0, -1));
-            });
-            AddingFrontOrBackFace(pointsContourCount, inxs, 0, edg, rev);
+            AddContourPosition(copy_Points, edg, 0, Vector3.Zero, - 1, rev);
             //Если есть ошибка, то выведется сообщение с построенной ошибочной гранью до этого
             if (message != "")
             {
@@ -93,13 +84,7 @@ namespace TestCAD.Models
                 //Вектор длины (на сколько нужно выдавить по оси z)
                 var v = new Vector3(0, 0, Length);
                 //построение лицевой грани
-                copy_Points.ForEach(p =>
-                {
-                    Positions.Add(p + v);
-                    Normals.Add(new Vector3(0, 0, 1));
-                });
-                AddingFrontOrBackFace(pointsContourCount, inxs, pointsContourCount, edg, rev);
-                //Если есть ошибка, то выведется сообщение с построенной ошибочной гранью до этого
+                AddContourPosition(copy_Points, edg, copy_Points.Count, v, 1, rev);
                 if (message != "")
                 { 
                     ErrorStr = message;
@@ -107,29 +92,45 @@ namespace TestCAD.Models
                 else
                 {
                     int sign = rev ? -1 : 1;//нужно ли перенаправить полярность? Для этого нужно будет изменить ориентацию нормалей
-                    for (int i = 0; i < copy_Points.Count - 1; i++)
-                    {
-                        int i0 = i;
-                        int i1 = i + 1;
-                        int ip0 = i0 + copy_Points.Count;
-                        int ip1 = i1 + copy_Points.Count;
-                        var n = GetNormal(ip0, i0, i1) * sign;//вычисление нормали через векторное произведение 
-                        AddingSideFace(i0, ip0, i1, ip1, n, ref edg);//построение боковых граней через индексы треугольников (кроме нижней)
-                    }
-
-                    {
-                        int i0 = copy_Points.Count - 1;
-                        int i1 = 0;
-                        int ip0 = i0 + copy_Points.Count;
-                        int ip1 = i1 + copy_Points.Count;
-                        var n = GetNormal(ip0, i0, i1) * sign;//вычисление нормали через векторное произведение
-                        AddingSideFace(i0, ip0, i1, ip1, n, ref edg);//построение нижней грани через индексы треугольников
-                    }
+                    AddSide(0, copy_Points.Count, sign, edg);
                     //Проверка угла на корректность, т.е. не пересекаются ли у нас ребра при построении
                     ErrorStr = CatchingContourErrors.DoEdgesCrosAfterBuildWithAngle(edg);
                 }
             }
 
+        }
+
+        private void AddSide(int start, int end, int sign, List<Vector2> edg)//Боковые и нижняя грань
+        {
+            for (int i = start; i < end-1; i++)
+            {
+                int i0 = i;
+                int i1 = i + 1;
+                int ip0 = i0 + end;
+                int ip1 = i1 + end;
+                var n = GetNormal(ip0, i0, i1) * sign;//вычисление нормали через векторное произведение 
+                AddingSideFace(i0, ip0, i1, ip1, n, edg);//построение боковых граней через индексы треугольников (кроме нижней)
+            }
+
+            {
+                int i0 = end - 1;
+                int i1 = start;
+                int ip0 = i0 + end;
+                int ip1 = i1 + end;
+                var n = GetNormal(ip0, i0, i1) * sign;//вычисление нормали через векторное произведение
+                AddingSideFace(i0, ip0, i1, ip1, n, edg);//построение нижней грани через индексы треугольников
+            }
+        }
+        private void AddContourPosition(List<Vector3> points, List<Vector2> edg, int k, Vector3 v, int normal, bool rev)
+        {
+            var inxs = CuttingEarsTriangulator.Triangulate(points);
+            int pointsContourCount = points.Count;                      
+            points.ForEach(p =>
+            {
+                Positions.Add(p + v);
+                Normals.Add(new Vector3(0, 0, normal));
+            });
+            AddingFrontOrBackFace(pointsContourCount, inxs, k, edg, rev);
         }
         /// <summary>
         /// С помощью векторного произведения находить нормаль
@@ -154,7 +155,7 @@ namespace TestCAD.Models
             n.Normalize();
             return n;
         }
-        private void AddingSideFace(int i0, int ip0, int i1, int ip1, Vector3 n, ref List<Vector2> edg)
+        private void AddingSideFace(int i0, int ip0, int i1, int ip1, Vector3 n, List<Vector2> edg)
         {
             var face = new Face();
             int startInx = Positions.Count;

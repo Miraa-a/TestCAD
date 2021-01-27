@@ -18,7 +18,7 @@ namespace TestCAD
     /// </summary>
     class CatchingContourErrors
     {
-
+        public static List<Vector2> Edges = new List<Vector2>();
         /// <summary>
         /// Корректирует введенный контур, удаляя лишние повторы.
         /// </summary>
