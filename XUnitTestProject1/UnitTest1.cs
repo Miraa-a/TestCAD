@@ -112,7 +112,7 @@ namespace XUnitTestProject1
         public void TestExtruEx5()
         {
             //ошибка переворота контура
-            var ex = new Extrusion_with_hole() { Angle = 0, Length = 5, Deltha2 = 0.2f, Deltha1 = 1f };
+            var ex = new Extrusion_with_hole() { Angle = 0, Length = 5, Deltha2 = 2f, Deltha1 = 1f };
             ex.points = new()
             {
                 //new Vector2(1, 0),

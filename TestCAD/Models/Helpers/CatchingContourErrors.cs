@@ -76,13 +76,13 @@ namespace TestCAD
             Vector2 tmp = new Vector2();
             Vector2 tmp1 = new Vector2();
             List<float> vectormulry = new List<float>();
-            for (int i = 0; i < p.Count - 2; i += 2)
+            for (int i = 0; i < Edges.Count - 2; i += 2)
             {
-                tmp = p[i];
-                tmp1 = p[i + 1];
-                for (int j = i + 2; j < p.Count; j += 2)
+                tmp = Edges[i];
+                tmp1 = Edges[i + 1];
+                for (int j = i + 2; j < Edges.Count; j += 2)
                 {
-                    if (LineCross_(tmp.X, tmp.Y, tmp1.X, tmp1.Y, p[j].X, p[j].Y, p[j + 1].X, p[j + 1].Y))
+                    if (LineCross_(tmp.X, tmp.Y, tmp1.X, tmp1.Y, Edges[j].X, Edges[j].Y, Edges[j + 1].X, Edges[j + 1].Y))
                     {
                         str = "Угол не верный";
                         return str;
