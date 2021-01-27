@@ -20,12 +20,18 @@ namespace TestCAD.Models
     public class Extrusion_with_hole : BaseModel
     {
         public List<Vector2> points { get; set; } =
-            new() { new(1, 0), new Vector2(1, 2), new Vector2(0, 2), new Vector2(0, 0), };
+            new()
+            {
+                new Vector2(-1, -1),
+                new Vector2(-1, 4),
+                new Vector2(4, 4),
+                new Vector2(4, -1)
+            };
 
-        public float Length { get; set; } = -8;
-        public double Angle { get; set; } = 0;
-        public float Deltha1 { get; set; } = 0;
-        public float Deltha2 { get; set; } = 1;
+        public float Length { get; set; } = 5;
+        public double Angle { get; set; } = -15;
+        public float Deltha1 { get; set; } = 1;
+        public float Deltha2 { get; set; } = 2;
 
         public override void Update()
         {
@@ -33,16 +39,12 @@ namespace TestCAD.Models
             Positions.Clear();
             Indices.Clear();
             Normals.Clear();
-            ErrorStr = "";
-
-            string message = ""; //строка для вывода сообщения об ошибке
-
-
-            CatchingContourErrors.Correct_Contour(points, ref message);
+           
+            if (!Error)
+                ErrorStr = CatchingContourErrors.Check_Contour(points);
             var copy_Points = (points.Select(t => t.ToVector3())).ToList();
             var Font = copy_Points;
-            //Триангуляция контура, получение индексов треугольников. 
-            //var inxs = CuttingEarsTriangulator.Triangulate(copy_Points);
+
             int pointsContourCount = copy_Points.Count;
             bool rev = false;
             double copy_Angle = Angle;
@@ -53,49 +55,40 @@ namespace TestCAD.Models
                 rev = true;
                 copy_Angle = copy_Angle * (-1);
             }
-            
+
             List<Vector2> edg = new List<Vector2>(); //этот список заполняется точками начала и конца ребер. (для проверки пересечения)
 
             List<int> ListIndexIn = new List<int>();
             ListIndexIn = AddContourPosition(copy_Points, edg, 0, Vector3.Zero, new Vector3(0, 0, -1), rev, ListIndexIn);
-            if (message != "")
-            {
-                ErrorStr = message;
-            }
-            else
-            {
-                List<int> ListIndexNotIn = new List<int>();
-                Font = DirPoints(Font, ((float)Math.Tan((copy_Angle * Math.PI) / 180) * Length), message);
-               
-                AddContourPosition(Font, edg, pointsContourCount, new Vector3(0, 0, Length), new Vector3(0, 0, -1), rev);
-                copy_Points = DirPoints(copy_Points, Deltha2, message);
-                ListIndexNotIn = AddContourPosition(copy_Points, edg, 2*pointsContourCount, Vector3.Zero, new Vector3(0, 0, -1), rev, ListIndexNotIn);
 
-                if (!Error)
-                {
-                    AddingIndices(ListIndexIn, ListIndexNotIn,pointsContourCount,0,edg);
-                    ListIndexIn.Clear();
-                    ListIndexNotIn.Clear();
-                    Font = DirPoints(Font, Deltha2, message);
-                    Font = DirPoints(Font, ((float)Math.Tan((copy_Angle * Math.PI) / 180) * Length), message);
+            Font = DirPoints(Font, ((float)Math.Tan((copy_Angle * Math.PI) / 180) * Length));                    
+            AddContourPosition(Font, edg, pointsContourCount, new Vector3(0, 0, Length), new Vector3(0, 0, -1), rev);
 
-                    AddContourPosition(Font, edg, 3 * pointsContourCount, new Vector3(0, 0, Length+Deltha1), new Vector3(0, 0, 1), rev);
+            List<int> ListIndexNotIn = new List<int>();
+            copy_Points = DirPoints(copy_Points, Deltha2);
+            ListIndexNotIn = AddContourPosition(copy_Points, edg, 2 * pointsContourCount, Vector3.Zero, new Vector3(0, 0, -1), rev, ListIndexNotIn);
 
-                    if (!Error)
-                    {
+            if (!Error)
+                AddingIndices(ListIndexIn, ListIndexNotIn, pointsContourCount, 0, edg);
+            ListIndexIn.Clear();
+            ListIndexNotIn.Clear();
+            
+            Font = DirPoints(Font, Deltha2);
+            Font = DirPoints(Font, ((float)Math.Tan((copy_Angle * Math.PI) / 180) * Length));           
+            AddContourPosition(Font, edg, 3 * pointsContourCount, new Vector3(0, 0, Length + Deltha1), new Vector3(0, 0, 1), rev);
 
-                        int sign = rev ? -1 : 1;//нужно ли перенаправить полярность? Для этого нужно будет изменить ориентацию нормалей
+            int sign = rev ? -1 : 1;//нужно ли перенаправить полярность? Для этого нужно будет изменить ориентацию нормалей
 
-                        //Проверка угла на корректность, т.е. не пересекаются ли у нас ребра при построении
-                        ErrorStr = CatchingContourErrors.DoEdgesCrosAfterBuildWithAngle(edg);
-                        AddSide(0, copy_Points.Count, sign, edg, copy_Points.Count);
-                        AddSide(2 * pointsContourCount, 3 * pointsContourCount, sign, edg, copy_Points.Count);
-                    }
-                }
-            }
-            }
+            //Проверка угла на корректность, т.е. не пересекаются ли у нас ребра при построении
+            edg.Clear();
+            AddSide(0, copy_Points.Count, -sign, edg, copy_Points.Count);
+            AddSide(2 * pointsContourCount, 3 * pointsContourCount, sign, edg, copy_Points.Count);
+            if (!Error)
+                ErrorStr = CatchingContourErrors.DoEdgesCrosAfterBuildWithAngle(edg);
 
-            private void AddSide(int start, int end, int sign, List<Vector2> edg, int k)//Боковые и нижняя грань
+        }
+
+        private void AddSide(int start, int end, int sign, List<Vector2> edg, int k)//Боковые и нижняя грань
         {
             for (int i = start; i < end - 1; i++)
             {
@@ -118,27 +111,35 @@ namespace TestCAD.Models
         }
         private List<int> AddContourPosition(List<Vector3> points, List<Vector2> edg, int k, Vector3 v, Vector3 normal, bool rev, List<int> list = null)
         {
-            var inxs = CuttingEarsTriangulator.Triangulate(points);
+            //var inxs = CuttingEarsTriangulator.Triangulate(points);
             int pointsContourCount = points.Count;
             if (CuttingEarsTriangulator.Area(points) > 0f)
             {
                 rev = true;
             }
-            
             points.ForEach(p =>
+                {
+                    Positions.Add(p + v);
+                    Normals.Add(normal);
+                });
+            if (!Error)
+                ErrorStr = CatchingContourErrors.Check_Contour((points.Select(t => (Vector2)t)).ToList());
+            if (!Error)
+                ErrorStr = CatchingContourErrors.DoEdgesCrosAfterBuildWithAngle(edg);
+            
+            if (!Error)
             {
-                Positions.Add(p + v);
-                Normals.Add(normal);
-            });
-            //AddingFrontOrBackFace(pointsContourCount, k, edg);
-            if (k == pointsContourCount||k ==3* pointsContourCount)
-                AddingIndicesBack(pointsContourCount, inxs, k, edg);
-            else
-                list = CreateList(points.Count, inxs, k, rev);
+                var inxs = CuttingEarsTriangulator.Triangulate(points);
+                if (inxs.Count == 0) ErrorStr = CatchingContourErrors.Check_PointInOtherLine((points.Select(t => (Vector2)t)).ToList());
+                if (k == pointsContourCount || k == 3 * pointsContourCount)
+                    AddingIndicesBack(pointsContourCount, inxs, k, edg);
+                else
+                    list = CreateList(points.Count, inxs, k, rev);
+            }
             return list;
         }
 
-        private List<Vector3> DirPoints(List<Vector3> copy_Points, float value, string message)
+        private List<Vector3> DirPoints(List<Vector3> copy_Points, float value)
         {
             List<Vector2> direction = new List<Vector2>();
             foreach (var q in FindPerp(copy_Points))//нашли перпендикуляры, которые представляют собой двумерные векторы
@@ -161,12 +162,8 @@ namespace TestCAD.Models
             //Проверка полученного контура на пересечение, повторение точек и количество точек.
             //В случае повтора, повторяющиеся точки удаляются оставляя только первое вхождение
             var tmp = (copy_Points.Select(t => new Vector2(t.X, t.Y))).ToList();
-            CatchingContourErrors.Correct_Contour(tmp, ref message);
+            CatchingContourErrors.Check_Contour(tmp);
             copy_Points = (tmp.Select(t => t.ToVector3())).ToList();
-            if (message != "")
-            {
-                ErrorStr = message;
-            }
             return copy_Points;
         }
         /// <summary>
@@ -250,53 +247,23 @@ namespace TestCAD.Models
                 res.Add(i1);
                 res.Add(i2);
             }
-            var repeatPoint = res.GroupBy(x => x)
-              .Where(g => g.Count() > 1)
-              .ToDictionary(x => x.Key, y => y.Count());
-            //группируем элементы на основе их значения, затем выбираем представителя группы, если в группе более одного элемента
-            if (repeatPoint.Count != 0)//в группе есть повторы
-            {
-                foreach (var v in repeatPoint)
-                {
-                    int count_Repeat = v.Value;
-                    while (count_Repeat != 1)
-                    {
-                        res.RemoveAt(res.LastIndexOf(v.Key));
-                        count_Repeat--;
-                    }
-                }
-            }
+           
             return res;
         }
       
         private void AddingIndices(List<int> first, List<int> second, int conturCount, int startPosInx, List<Vector2> edg)
         {
- 
-            first.Sort();
-            second.Sort();
-            int i0 = first[first.Count - 1];
-            int i1 = second[second.Count - 1];
-            int i2 = second[0];
-            int i3 = first[0];
-            int i4 = first[second.Count - 1];
-
-            Indices.Add(i0);
-            Indices.Add(i1);
-            Indices.Add(i2);
-            Indices.Add(i2);
-            Indices.Add(i3);
-            Indices.Add(i4);
-
-            List<int> toFaceAdd = (Indices.TakeLast(6)).ToList();
-            AddingFace(toFaceAdd);
-
-            for (int i = 0; i < first.Count - 1; i++)
+            //if (first.Count == 0 && first.Count != second.Count) ErrorStr = "Внутренний контур пересекается";
+            //else if (second.Count == 0 && first.Count != second.Count) ErrorStr = "Внешний контур пересекается";
+            if (!Error)
             {
-                i0 = first[i];
-                i1 = second[i];
-                i2 = second[i + 1];
-                i3 = first[i + 1];
-                i4 = first[i];
+                first.Sort();
+                second.Sort();
+                int i0 = first[first.Count - 1];
+                int i1 = second[second.Count - 1];
+                int i2 = second[0];
+                int i3 = first[0];
+                int i4 = first[second.Count - 1];
 
                 Indices.Add(i0);
                 Indices.Add(i1);
@@ -305,11 +272,30 @@ namespace TestCAD.Models
                 Indices.Add(i3);
                 Indices.Add(i4);
 
-                toFaceAdd = (Indices.TakeLast(6)).ToList();
+                List<int> toFaceAdd = (Indices.TakeLast(6)).ToList();
                 AddingFace(toFaceAdd);
 
+                for (int i = 0; i < first.Count - 1; i++)
+                {
+                    i0 = first[i];
+                    i1 = second[i];
+                    i2 = second[i + 1];
+                    i3 = first[i + 1];
+                    i4 = first[i];
+
+                    Indices.Add(i0);
+                    Indices.Add(i1);
+                    Indices.Add(i2);
+                    Indices.Add(i2);
+                    Indices.Add(i3);
+                    Indices.Add(i4);
+
+                    toFaceAdd = (Indices.TakeLast(6)).ToList();
+                    AddingFace(toFaceAdd);
+
+                }
+                AddingFaceEdges(conturCount, startPosInx, edg);
             }
-            AddingFaceEdges(conturCount, startPosInx, edg);
         }
         private void AddingFace(List<int> p)
         {
@@ -326,8 +312,8 @@ namespace TestCAD.Models
             for (int i = 0; i < conturCount - 1; i++)
             {
                 AddEdge(Edges, i + startPosInx, i + 1 + startPosInx);
-                edg.Add(new Vector2(Positions[i + startPosInx].X, Positions[i + startPosInx].Y));
-                edg.Add(new Vector2(Positions[i + 1 + startPosInx].X, Positions[i + 1 + startPosInx].Y));
+                edg.Add((Vector2)Positions[i + startPosInx]);
+                edg.Add((Vector2)Positions[i + 1 + startPosInx]);
                 AddEdge(face.Edges, i + startPosInx, i + 1 + startPosInx);
             }
         }

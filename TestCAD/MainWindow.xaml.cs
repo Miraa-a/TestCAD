@@ -66,6 +66,10 @@ namespace TestCAD
         {
             VisualizeFigure(new Extrusion_with_angle());
         }
+        private void Button_Click_AddExtrusionHole(object sender, RoutedEventArgs e) //добавление выдавливания на сцену
+        {
+            VisualizeFigure(new Extrusion_with_hole());
+        }
         public void VisualizeFigure(BaseModel m)
         {
            

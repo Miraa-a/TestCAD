@@ -53,6 +53,10 @@
                 Click="Button_Click_AddExtrusionAngel"
                 Margin="4"
                 Content="Добавить выдавливание"/>
+            <Button 
+                Click="Button_Click_AddExtrusionHole"
+                Margin="4"
+                Content="Добавить выдавливание с дыркой"/>
 
             <StackPanel Orientation="Horizontal">
                 <TextBlock >OIT Weight Power:</TextBlock>

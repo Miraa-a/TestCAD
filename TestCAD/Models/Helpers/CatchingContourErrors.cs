@@ -18,7 +18,7 @@ namespace TestCAD
     /// </summary>
     class CatchingContourErrors
     {
-        public static List<Vector2> Edges = new List<Vector2>();
+        //public static bool er
         /// <summary>
         /// Корректирует введенный контур, удаляя лишние повторы.
         /// </summary>
@@ -30,19 +30,61 @@ namespace TestCAD
         /// </param>
        
 
-        public static void Correct_Contour(List<Vector2> p, ref string ErrorStr)
+        public static string Check_Contour(List<Vector2> p)
         {
-            p = Correct_Repeat(p);
+            string ErrorCatchStr = null;
+            //p = Correct_Repeat(p);
+            if (Check_Repeat(p))
+            {
+                ErrorCatchStr = String.Format("В контуре есть повторы");
+            }
             if (Check_CountPoints(p))//проверка контура на количество точек
             {
-                ErrorStr = String.Format("Сейчас точек {0} недостаточно {1} точек", p.Count,
+                ErrorCatchStr = String.Format("Сейчас точек {0} недостаточно {1} точек", p.Count,
                     4 - p.Count);
             }
             if (Check_Crossing(p))
             {
-                ErrorStr = "Контур пересекается";
+                ErrorCatchStr = "Контур пересекается";
             }
+
+            return ErrorCatchStr;
         }
+
+        private static bool Check_Repeat(List<Vector2> p)
+        {
+            bool check;
+            var repeatPoint = p.GroupBy(x => x)
+                .Where(g => g.Count() > 1)
+                .ToDictionary(x => x.Key, y => y.Count());
+            //группируем элементы на основе их значения, затем выбираем представителя группы, если в группе более одного элемента
+            if (repeatPoint.Count != 0)//в группе есть повторы
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public static string Check_PointInOtherLine(List<Vector2> p)//Точка одного ребра лежит на другом ребре
+        {
+            string strError = null;
+            Vector2 tmp = new Vector2();
+            Vector2 tmp1 = new Vector2();
+            for (int i = 0; i < p.Count - 1; i++)
+            {
+                tmp = p[i];
+                tmp1 = p[i + 1];
+
+                for (int j = i + 1; j < p.Count; j++)
+                {
+
+                    if ((tmp1 - tmp).Length() > p[j].Length()) return strError = "Точка одного ребра лежит на другом ребре";
+                }
+            }
+            return strError;
+        }
+
+
         /// <summary>
         /// Осуществляет проверку контура на количество точек.
         /// </summary>
@@ -76,13 +118,13 @@ namespace TestCAD
             Vector2 tmp = new Vector2();
             Vector2 tmp1 = new Vector2();
             List<float> vectormulry = new List<float>();
-            for (int i = 0; i < Edges.Count - 2; i += 2)
+            for (int i = 0; i < p.Count - 2; i += 2)
             {
-                tmp = Edges[i];
-                tmp1 = Edges[i + 1];
-                for (int j = i + 2; j < Edges.Count; j += 2)
+                tmp = p[i];
+                tmp1 = p[i + 1];
+                for (int j = i + 2; j < p.Count; j += 2)
                 {
-                    if (LineCross_(tmp.X, tmp.Y, tmp1.X, tmp1.Y, Edges[j].X, Edges[j].Y, Edges[j + 1].X, Edges[j + 1].Y))
+                    if (LineCross_(tmp.X, tmp.Y, tmp1.X, tmp1.Y, p[j].X, p[j].Y, p[j + 1].X, p[j + 1].Y))
                     {
                         str = "Угол не верный";
                         return str;
@@ -152,6 +194,8 @@ namespace TestCAD
         {
             Vector2 tmp = new Vector2();
             Vector2 tmp1 = new Vector2();
+            Vector2 tmp2 = new Vector2();
+            Vector2 tmp3 = new Vector2();
             List<float> vectormulry = new List<float>();
             for (int i = 0; i < p.Count - 2; i += 2)
             {
@@ -159,7 +203,9 @@ namespace TestCAD
                 tmp1 = p[i + 1];
                 for (int j = i + 1; j < p.Count - 1; j++)
                 {
-                    if(LineCross_(tmp.X, tmp.Y, tmp1.X, tmp1.Y, p[j].X, p[j].Y, p[j + 1].X, p[j + 1].Y))
+                    tmp2 = p[j];
+                    tmp3 = p[j+1];
+                    if (LineCross_(tmp.X, tmp.Y, tmp1.X, tmp1.Y, tmp2.X, tmp2.Y, tmp3.X, tmp3.Y))
                     {
                         return true;
                     }

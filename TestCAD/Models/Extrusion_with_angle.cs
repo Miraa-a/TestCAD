@@ -31,72 +31,58 @@ namespace TestCAD.Models
             Positions.Clear();
             Indices.Clear();
             Normals.Clear();
-            ErrorStr = "";
-            
-            string message = "";//строка для вывода сообщения об ошибке
             
             //Проверка контура на пересечение, повторение точек и количество точек.
             //В случае повтора, повторяющиеся точки удаляются оставляя только первое вхождение
-            CatchingContourErrors.Correct_Contour(points, ref message); 
-            var copy_Points = (points.Select(t => t.ToVector3())).ToList();
+            if (!Error)
+                ErrorStr = CatchingContourErrors.Check_Contour(points);
+            var points3D = (points.Select(t => t.ToVector3())).ToList();
             //Триангуляция контура, получение индексов треугольников. 
             List<Vector2> edg = new List<Vector2>();
             double copy_Angle = Angle;
             bool rev = false;
             //Проверка полярности контура (по часовой заполняется или против часовой)
-            if (CuttingEarsTriangulator.Area(copy_Points) > 0f)
+            if (CuttingEarsTriangulator.Area(points3D) > 0f)
             {
                 rev = true;
                 copy_Angle = copy_Angle * (-1);
             }
-            AddContourPosition(copy_Points, edg, 0, Vector3.Zero, - 1, rev);
-            //Если есть ошибка, то выведется сообщение с построенной ошибочной гранью до этого
-            if (message != "")
+            AddContourPosition(points3D, edg, 0, Vector3.Zero, -1, rev);
+
+            //список нужен для содержания в нем перпендикуляров к ребру каждой грани
+            List<Vector2> direction = new List<Vector2>();
+            foreach (var q in FindPerp(points3D))//нашли перпендикуляры, которые представляют собой двумерные векторы
             {
-                ErrorStr = message;
+                q.Normalize();//нормализировали каждый вектор
+                direction.Add(q * ((float)Math.Tan((copy_Angle * Math.PI) / 180) * Length));//умножили каждый вектор на длину (для раскрытия или сужения фигуры)
             }
-            else
+            //список нужен для содержания в нем направляющих для каждой точки
+            List<Vector2> directionpoint = new List<Vector2>();
+            directionpoint.Add(direction[0] + direction[direction.Count - 1]);
+            for (int i = 1; i < direction.Count; i++)
             {
-                //список нужен для содержания в нем перпендикуляров к ребру каждой грани
-                List<Vector2> direction = new List<Vector2>();
-                foreach (var q in FindPerp(copy_Points))//нашли перпендикуляры, которые представляют собой двумерные векторы
-                {
-                    q.Normalize();//нормализировали каждый вектор
-                    direction.Add(q * ((float)Math.Tan((copy_Angle * Math.PI) / 180) * Length));//умножили каждый вектор на длину (для раскрытия или сужения фигуры)
-                }
-                //список нужен для содержания в нем направляющих для каждой точки
-                List<Vector2> directionpoint = new List<Vector2>();
-                directionpoint.Add(direction[0] + direction[direction.Count - 1]);
-                for (int i = 1; i < direction.Count; i++)
-                {
-                    directionpoint.Add(direction[i] + direction[i - 1]);
-                }
-                //к каждой точке прибавляем свою направляющую
-                for (int i = 0; i < copy_Points.Count; i++)
-                {
-                    copy_Points[i] = copy_Points[i] + directionpoint[i].ToVector3();
-                }
-                //Проверка полученного контура на пересечение, повторение точек и количество точек.
-                //В случае повтора, повторяющиеся точки удаляются оставляя только первое вхождение
-                var tmp = (copy_Points.Select(t => new Vector2(t.X, t.Y))).ToList();
-                CatchingContourErrors.Correct_Contour(tmp, ref message);
-                copy_Points = (tmp.Select(t => t.ToVector3())).ToList();
-                //Вектор длины (на сколько нужно выдавить по оси z)
-                var v = new Vector3(0, 0, Length);
-                //построение лицевой грани
-                AddContourPosition(copy_Points, edg, copy_Points.Count, v, 1, rev);
-                if (message != "")
-                { 
-                    ErrorStr = message;
-                }
-                else
-                {
-                    int sign = rev ? -1 : 1;//нужно ли перенаправить полярность? Для этого нужно будет изменить ориентацию нормалей
-                    AddSide(0, copy_Points.Count, sign, edg);
-                    //Проверка угла на корректность, т.е. не пересекаются ли у нас ребра при построении
-                    ErrorStr = CatchingContourErrors.DoEdgesCrosAfterBuildWithAngle(edg);
-                }
+                directionpoint.Add(direction[i] + direction[i - 1]);
             }
+            //к каждой точке прибавляем свою направляющую
+            for (int i = 0; i < points3D.Count; i++)
+            {
+                points3D[i] = points3D[i] + directionpoint[i].ToVector3();
+            }
+            //Проверка полученного контура на пересечение, повторение точек и количество точек.
+            //В случае повтора, повторяющиеся точки удаляются оставляя только первое вхождение
+            if (!Error)
+                ErrorStr = CatchingContourErrors.Check_Contour((points3D.Select(t => new Vector2(t.X, t.Y))).ToList());
+
+            //Вектор длины (на сколько нужно выдавить по оси z)
+            var v = new Vector3(0, 0, Length);
+            //построение лицевой грани
+            AddContourPosition(points3D, edg, points3D.Count, v, 1, rev);
+            int sign = rev ? -1 : 1;//нужно ли перенаправить полярность? Для этого нужно будет изменить ориентацию нормалей
+            AddSide(0, points3D.Count, sign, edg);
+            //Проверка угла на корректность, т.е. не пересекаются ли у нас ребра при построении
+            if (!Error)
+                ErrorStr = CatchingContourErrors.DoEdgesCrosAfterBuildWithAngle(edg);
+
 
         }
 
@@ -121,6 +107,8 @@ namespace TestCAD.Models
                 AddingSideFace(i0, ip0, i1, ip1, n, edg);//построение нижней грани через индексы треугольников
             }
         }
+
+
         private void AddContourPosition(List<Vector3> points, List<Vector2> edg, int k, Vector3 v, int normal, bool rev)
         {
             var inxs = CuttingEarsTriangulator.Triangulate(points);
