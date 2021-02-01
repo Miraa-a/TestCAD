@@ -25,6 +25,7 @@
                         FXAALevel="Medium"
                         EffectsManager="{StaticResource eff}"
                         ShowCameraInfo="True"
+                        ModelUpDirection="0,0,1"
                         Grid.Column="0">
             <hx:AmbientLight3D Color="White"/>
             <hx:DirectionalLight3D Direction="{Binding ElementName=viewport, Path=Camera.LookDirection}" Color="White" />
