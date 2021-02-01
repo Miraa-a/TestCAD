@@ -59,22 +59,22 @@ namespace TestCAD.Models
             List<Vector2> edg = new List<Vector2>(); //этот список заполняется точками начала и конца ребер. (для проверки пересечения)
 
             List<int> ListIndexIn = new List<int>();
-            ListIndexIn = AddContourPosition(copy_Points, edg, 0, Vector3.Zero, new Vector3(0, 0, -1), rev, ListIndexIn);
+           ListIndexIn = AddContourPosition(copy_Points, edg, 0, Vector3.Zero, new Vector3(0, 0, -1), rev, ListIndexIn);
 
-            Font = DirPoints(Font, ((float)Math.Tan((copy_Angle * Math.PI) / 180) * Length));                    
+            Font = DirPointsWithDeltha2(Font, ((float)Math.Tan((copy_Angle * Math.PI) / 180) * Length));                    //kfjvkjcjh
             AddContourPosition(Font, edg, pointsContourCount, new Vector3(0, 0, Length), new Vector3(0, 0, -1), rev);
 
             List<int> ListIndexNotIn = new List<int>();
-            copy_Points = DirPoints(copy_Points, Deltha2);
-            ListIndexNotIn = AddContourPosition(copy_Points, edg, 2 * pointsContourCount, Vector3.Zero, new Vector3(0, 0, -1), rev, ListIndexNotIn);
+            copy_Points = DirPointsWithDeltha2(copy_Points, Deltha2);
+           ListIndexNotIn = AddContourPosition(copy_Points, edg, 2 * pointsContourCount, Vector3.Zero, new Vector3(0, 0, -1), rev, ListIndexNotIn);
 
             if (!Error)
                 AddingIndices(ListIndexIn, ListIndexNotIn, pointsContourCount, 0, edg);
             ListIndexIn.Clear();
             ListIndexNotIn.Clear();
             
-            Font = DirPoints(Font, Deltha2);
-            Font = DirPoints(Font, ((float)Math.Tan((copy_Angle * Math.PI) / 180) * Length));           
+            Font = DirPointsWithDeltha2(Font, Deltha2);
+            Font = DirPointsWithDeltha2(Font, ((float)Math.Tan((copy_Angle * Math.PI) / 180) * Length));           ///djhjuhcffch
             AddContourPosition(Font, edg, 3 * pointsContourCount, new Vector3(0, 0, Length + Deltha1), new Vector3(0, 0, 1), rev);
 
             int sign = rev ? -1 : 1;//нужно ли перенаправить полярность? Для этого нужно будет изменить ориентацию нормалей
@@ -126,7 +126,7 @@ namespace TestCAD.Models
                 ErrorStr = CatchingContourErrors.Check_Contour((points.Select(t => (Vector2)t)).ToList());
             if (!Error)
                 ErrorStr = CatchingContourErrors.DoEdgesCrosAfterBuildWithAngle(edg);
-            
+
             if (!Error)
             {
                 var inxs = CuttingEarsTriangulator.Triangulate(points);
@@ -138,8 +138,113 @@ namespace TestCAD.Models
             }
             return list;
         }
+        private List<Vector3> DirPointsWithDeltha2(List<Vector3> copy_Points, float value)
+        {
+            List<Vector2> result = FindPerp((points.Select(t => new Vector3(t.X, t.Y, 1))).ToList());
+            List<Vector2> pointsDouble = new List<Vector2>();
+           
+            for (int i = 0; i < points.Count - 1; i++)
+            {
 
-        private List<Vector3> DirPoints(List<Vector3> copy_Points, float value)
+                pointsDouble.Add(points[i]);
+                pointsDouble.Add(points[i + 1]);
+
+            }
+            pointsDouble.Add(points[points.Count - 1]);
+            pointsDouble.Add(points[0]);
+            int j = 0;
+            var tmpX = 1;
+            var tmpY = 1;
+            for (int i = 0; i < pointsDouble.Count - 1; i += 2)
+            {
+                
+                if (result[j].X < 0) tmpX = -1; else tmpX = 1;
+                if (result[j].Y < 0) tmpY = -1; else tmpY = 1;
+                if (result[j].X != 0 && result[j].Y==0)
+                {
+                    
+                    pointsDouble[i] = new Vector2(pointsDouble[i].X + value * tmpX, pointsDouble[i].Y);
+                    pointsDouble[i+1] = new Vector2(pointsDouble[i+1].X + value * tmpX, pointsDouble[i+1].Y);
+                }
+                if (result[j].X == 0 && result[j].Y != 0)
+                {
+                    pointsDouble[i] = new Vector2(pointsDouble[i].X, pointsDouble[i].Y + value * tmpY);
+                    pointsDouble[i + 1] = new Vector2(pointsDouble[i + 1].X , pointsDouble[i + 1].Y + value * tmpY);
+                }
+                else if (result[j].X != 0 && result[j].Y != 0)
+                {
+                    pointsDouble[i] = new Vector2(pointsDouble[i].X + value * tmpX, pointsDouble[i].Y + value * tmpY);
+                    pointsDouble[i + 1] = new Vector2(pointsDouble[i + 1].X + value * tmpX, pointsDouble[i + 1].Y + value * tmpY);
+                }
+                j++;
+            }
+            List<Vector2> resultList = new List<Vector2>();
+            resultList.Add(GetIntersectionPointOfTwoLines(pointsDouble[pointsDouble.Count - 1], pointsDouble[pointsDouble.Count - 2], pointsDouble[0], pointsDouble[1]));
+            for (int i = 0; i < pointsDouble.Count - 2; i += 2)
+            {
+                resultList.Add(GetIntersectionPointOfTwoLines(pointsDouble[i], pointsDouble[i + 1], pointsDouble[i + 2], pointsDouble[i + 3]));
+            }
+            for(int i =0; i < resultList.Count; i++)
+            {
+                copy_Points[i] = resultList[i].ToVector3();
+            }
+            var tmp = (copy_Points.Select(t => new Vector2(t.X, t.Y))).ToList();
+            CatchingContourErrors.Check_Contour(tmp);
+            copy_Points = (tmp.Select(t => t.ToVector3())).ToList();
+            return copy_Points;
+
+        }
+        /// <summary>
+        /// Возвращает точку пересечения двух прямых
+        /// </summary>
+        /// <param name="p1_1">Первая точка прямой 1 КЕК</param>
+        /// <param name="p1_2">Вторая точка прямой 1</param>
+        /// <param name="p2_1">Первая точка прямой 2</param>
+        /// <param name="p2_2">Вторая точка прямой 2</param>
+        /// <param name="state">-1, если параллельны, 0 если совпадают, 1 если пересекаются, -2 если ошибка</param>
+        /// <returns></returns>
+        public Vector2 GetIntersectionPointOfTwoLines(Vector2 p1_1, Vector2 p1_2, Vector2 p2_1, Vector2 p2_2/*, out int state*/)
+        {
+            //state = -2;
+            Vector2 result = new Vector2();
+            //Если знаменатель (n) равен нулю, то прямые параллельны.
+            //Если и числитель (m или w) и знаменатель (n) равны нулю, то прямые совпадают.
+            //Если нужно найти пересечение отрезков, то нужно лишь проверить, лежат ли ua и ub на промежутке [0,1].
+            //Если какая-нибудь из этих двух переменных 0 <= ui <= 1, то соответствующий отрезок содержит точку пересечения.
+            //Если обе переменные приняли значения из [0,1], то точка пересечения прямых лежит внутри обоих отрезков.
+            float m = ((p2_2.X - p2_1.X) * (p1_1.Y - p2_1.Y) - (p2_2.Y - p2_1.Y) * (p1_1.X - p2_1.X));
+            float w = ((p1_2.X - p1_1.X) * (p1_1.Y - p2_1.Y) - (p1_2.Y - p1_1.Y) * (p1_1.X - p2_1.X)); //Можно обойтись и без этого
+            float n = ((p2_2.Y - p2_1.Y) * (p1_2.X - p1_1.X) - (p2_2.X - p2_1.X) * (p1_2.Y - p1_1.Y));
+
+            float Ua = m / n;
+            float Ub = w / n;
+
+            if ((n == 0) && (m != 0))
+            {
+                //state = -1; //Прямые параллельны (не имеют пересечения)
+            }
+            else if ((m == 0) && (n == 0))
+            {
+                //state = 0; //Прямые совпадают
+            }
+            else
+            {
+                //Прямые имеют точку пересечения
+                result.X = p1_1.X + Ua * (p1_2.X - p1_1.X);
+                result.Y = p1_1.Y + Ua * (p1_2.Y - p1_1.Y);
+
+                // Проверка попадания в интервал
+                bool a = result.X >= p1_1.X; bool b = result.X <= p1_1.X; bool c = result.X >= p2_1.X; bool d = result.X <= p2_1.X;
+                bool e = result.Y >= p1_1.Y; bool f = result.Y <= p1_1.Y; bool g = result.Y >= p2_1.Y; bool h = result.Y <= p2_1.Y;
+
+                if (((a || b) && (c || d)) && ((e || f) && (g || h)))
+                {
+                    // state = 1; //Прямые имеют точку пересечения
+                }
+            }
+            return result;
+        }
+        private List<Vector3> DirPointsWithAngle(List<Vector3> copy_Points, float value)
         {
             List<Vector2> direction = new List<Vector2>();
             foreach (var q in FindPerp(copy_Points))//нашли перпендикуляры, которые представляют собой двумерные векторы
@@ -161,6 +266,7 @@ namespace TestCAD.Models
             }
             //Проверка полученного контура на пересечение, повторение точек и количество точек.
             //В случае повтора, повторяющиеся точки удаляются оставляя только первое вхождение
+           
             var tmp = (copy_Points.Select(t => new Vector2(t.X, t.Y))).ToList();
             CatchingContourErrors.Check_Contour(tmp);
             copy_Points = (tmp.Select(t => t.ToVector3())).ToList();
@@ -247,7 +353,6 @@ namespace TestCAD.Models
                 res.Add(i1);
                 res.Add(i2);
             }
-           
             return res;
         }
       
@@ -355,6 +460,15 @@ namespace TestCAD.Models
         List<Vector2> FindPerp(List<Vector3> p)//Поиск перепендикуляра к ребру каждой грани
         {
             List<Vector2> result = new List<Vector2>();
+            //Vector3 z = new Vector3(0, 0, 1);
+            //for(int i = 0; i<p.Count-1;i++)
+            //{
+            //    var tmp = p[i + 1] - p[i];
+            //    var t = Vector3.Cross(z, tmp);
+            //    result.Add(new Vector2(t.X, t.Y));
+            //}
+            //Vector3 tmp1 = Vector3.Cross(p[p.Count - 1], p[0]);
+            //result.Add(new Vector2(tmp1.X, tmp1.Y));
             for (int i = 0; i < p.Count - 1; i++)
             {
                 Vector3 r = Vector3.Cross(p[i], p[i + 1]);

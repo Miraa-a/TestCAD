@@ -112,7 +112,7 @@ namespace XUnitTestProject1
         public void TestExtruEx5()
         {
             //ошибка переворота контура
-            var ex = new Extrusion_with_hole() { Angle = -1, Length = 5, Deltha2 = 0.2f, Deltha1 = 6f };
+            var ex = new Extrusion_with_hole() { Angle = -15, Length = 5, Deltha2 = 0.2f, Deltha1 = 6f };
             ex.points = new()
             {
                 new Vector2(1, 0),
@@ -168,14 +168,15 @@ namespace XUnitTestProject1
         public void TestExtruEx7()
         {
             //ванна
-            var ex = new Extrusion_with_hole() { Angle = -15, Length = 5, Deltha2 = 2f, Deltha1 = 3f };
+            var ex = new Extrusion_with_hole() { Angle = 0, Length = 5, Deltha2 = 1f, Deltha1 = 3f };
             ex.points = new()
             {
 
                 new Vector2(-1, -1),
                 new Vector2(-1, 4),
-                new Vector2(4, 4),
-                new Vector2(4, -1)
+                new Vector2(4, 6),
+                new Vector2(5, 6),
+                new Vector2(4, -1),
             };
             Starter.Show(ex);
         }
