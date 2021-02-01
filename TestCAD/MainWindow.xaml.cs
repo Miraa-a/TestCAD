@@ -37,7 +37,7 @@ namespace TestCAD
 
             sceneNodeGroup = new SceneNodeGroupModel3D();
             viewport.Items.Add(sceneNodeGroup);
-            viewport.Items.Add(new AxisPlaneGridModel3D());
+            viewport.Items.Add(new AxisPlaneGridModel3D(){ UpAxis = Axis.Z});
             
             WindowState = WindowState.Maximized;
 
@@ -78,10 +78,6 @@ namespace TestCAD
             var tmp = ToGeometry(m);
             MeshGeometryModel3D model = new() { Geometry = tmp };
 
-            var group = new Transform3DGroup();
-            group.Children.Add(new ScaleTransform3D(5, 5, 5));
-            group.Children.Add(new TranslateTransform3D(rnd.NextDouble(-20, 20), rnd.NextDouble(0, 15), rnd.NextDouble(-20, 20)));
-            model.Transform = group;
             if (m.Error)
             {
                 MessageBoxResult result = MessageBox.Show(m.ErrorStr);
@@ -105,10 +101,8 @@ namespace TestCAD
             m.Edges.ForEach(x2 => inxs2.AddAll(x2.Indices));
             m.Faces.ForEach(x => x.Edges.ForEach(x2 => inxs2.AddAll(x2.Indices)));
             LineGeometry3D lineGeom = new() { Positions = m.Positions, Indices = inxs2, };
-            LineGeometryModel3D edge = new() { Geometry = lineGeom, Color = Colors.Red, Transform = group };
+            LineGeometryModel3D edge = new() { Geometry = lineGeom, Color = Colors.Red };
             viewport.Items.Add(edge);
-
-           
         }
 
         private MeshGeometry3D ToGeometry(BaseModel m)
@@ -126,8 +120,8 @@ namespace TestCAD
             return model;
         }
 
-        private OrthographicCamera _ortoCam = new OrthographicCamera() { Position = new Point3D(100, 100, 100), LookDirection = new Vector3D(-100, -100, -100), UpDirection = new Vector3D(0, 1, 0) ,Width = 200, FarPlaneDistance = 1000};
-        private PerspectiveCamera _perspCam = new PerspectiveCamera() { Position = new Point3D(100, 100, 100), LookDirection = new Vector3D(-100, -100, -100), UpDirection = new Vector3D(0, 1, 0)};
+        private OrthographicCamera _ortoCam = new OrthographicCamera() { Position = new Point3D(100, 100, 100), LookDirection = new Vector3D(-100, -100, -100), UpDirection = new Vector3D(0, 0, 1) ,Width = 200, FarPlaneDistance = 1000};
+        private PerspectiveCamera _perspCam = new PerspectiveCamera() { Position = new Point3D(100, 100, 100), LookDirection = new Vector3D(-100, -100, -100), UpDirection = new Vector3D(0, 0, 1)};
 
         private void IsPerspectiveCheckBox_OnChecked(object sender, RoutedEventArgs e)
         {
