@@ -37,8 +37,8 @@ namespace TestCAD
 
             sceneNodeGroup = new SceneNodeGroupModel3D();
             viewport.Items.Add(sceneNodeGroup);
-            viewport.Items.Add(new AxisPlaneGridModel3D() { UpAxis = Axis.Z });
-
+            viewport.Items.Add(new AxisPlaneGridModel3D(){ UpAxis = Axis.Z});
+            
             WindowState = WindowState.Maximized;
 
             var opacityHelper = new OpacityHelper(viewport);
@@ -72,7 +72,7 @@ namespace TestCAD
         }
         public void VisualizeFigure(BaseModel m)
         {
-
+           
             // визуализируем фигуру
             m.Update();
             var tmp = ToGeometry(m);
@@ -120,8 +120,8 @@ namespace TestCAD
             return model;
         }
 
-        private OrthographicCamera _ortoCam = new OrthographicCamera() { Position = new Point3D(100, 100, 100), LookDirection = new Vector3D(-100, -100, -100), UpDirection = new Vector3D(0, 0, 1), Width = 200, FarPlaneDistance = 1000 };
-        private PerspectiveCamera _perspCam = new PerspectiveCamera() { Position = new Point3D(100, 100, 100), LookDirection = new Vector3D(-100, -100, -100), UpDirection = new Vector3D(0, 0, 1) };
+        private OrthographicCamera _ortoCam = new OrthographicCamera() { Position = new Point3D(100, 100, 100), LookDirection = new Vector3D(-100, -100, -100), UpDirection = new Vector3D(0, 0, 1) ,Width = 200, FarPlaneDistance = 1000};
+        private PerspectiveCamera _perspCam = new PerspectiveCamera() { Position = new Point3D(100, 100, 100), LookDirection = new Vector3D(-100, -100, -100), UpDirection = new Vector3D(0, 0, 1)};
 
         private void IsPerspectiveCheckBox_OnChecked(object sender, RoutedEventArgs e)
         {
@@ -161,7 +161,7 @@ namespace TestCAD
             }
         }
 
-        private bool _showWireframe = false;
+        private bool _showWireframe= false;
         public bool IsShowWireframe
         {
             get => _showWireframe;
