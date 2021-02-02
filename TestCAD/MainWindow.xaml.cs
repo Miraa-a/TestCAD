@@ -72,7 +72,7 @@ namespace TestCAD
         }
         public void VisualizeFigure(BaseModel m)
         {
-           
+
             // визуализируем фигуру
             m.Update();
             var tmp = ToGeometry(m);
@@ -161,7 +161,7 @@ namespace TestCAD
             }
         }
 
-        private bool _showWireframe= false;
+        private bool _showWireframe = false;
         public bool IsShowWireframe
         {
             get => _showWireframe;
