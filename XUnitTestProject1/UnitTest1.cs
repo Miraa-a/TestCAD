@@ -197,5 +197,43 @@ namespace XUnitTestProject1
             };
             Starter.Show(ex);
         }
+        [Fact]
+        public void TestExtruEx9()
+        {
+            //ванна
+            var ex = new Extrusion_with_hole() { Angle = -3, Length = 5, Deltha2 = 1f, Deltha1 = 0.5f };
+            ex.points = new()
+            {
+
+                new Vector2(0, 0),
+                new Vector2(0, 2),
+                new Vector2(0, 4),
+                new Vector2(4, 6),
+                new Vector2(5, 6),
+                //new Vector2(4, -1),
+            };
+            Starter.Show(ex);
+        }
+        [Fact]
+        public void TestExtruEx10()
+        {
+            //ванна
+            var ex = new Extrusion_with_hole() { Angle = 10, Length = 5, Deltha2 = 1f, Deltha1 = 0.5f };
+            ex.points = new()
+            {
+                //new Vector2(-1, -1),
+                //new Vector2(-1, 4),
+                //new Vector2(4, 4),
+                //new Vector2(4, -1)
+
+                new Vector2(0, 0),
+                new Vector2(0, 2),
+                new Vector2(0, 4),
+                new Vector2(4, 6),
+                //new Vector2(5, 6),
+                new Vector2(4, -1),
+            };
+            Starter.Show(ex);
+        }
     }
 }

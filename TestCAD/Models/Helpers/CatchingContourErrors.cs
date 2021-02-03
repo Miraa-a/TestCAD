@@ -36,7 +36,7 @@ namespace TestCAD
             //p = Correct_Repeat(p);
             if (Check_Repeat(p))
             {
-                ErrorCatchStr = String.Format("В контуре есть повторы");
+                ErrorCatchStr = String.Format("В контуре есть повторы или несколько точек обратились в одну (слишком большое дельта 2)");
             }
             if (Check_CountPoints(p))//проверка контура на количество точек
             {

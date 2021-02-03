@@ -48,29 +48,27 @@ namespace TestCAD.Models
                 rev = true;
                 copy_Angle = copy_Angle * (-1);
             }
-
             List<Vector2> edg = new List<Vector2>(); //этот список заполняется точками начала и конца ребер. (для проверки пересечения)
-
+           
+            AddContourPosition(copy_Points, edg, 0, new Vector3(0, 0, 0), new Vector3(0, 0, -1), rev);
+            copy_Points = DirPointsWithDeltha2(copy_Points, points, -Deltha2);
+            AddContourPosition(copy_Points, edg, pointsContourCount, new Vector3(0, 0, -Deltha1), new Vector3(0, 0, 1), rev);
             List<int> ListIndexIn = new List<int>();
-            ListIndexIn = AddContourPosition(Font, edg, 0, new Vector3(0, 0, -Length), new Vector3(0, 0, 1), rev, ListIndexIn);
+            //Font = DirPointsWithDeltha2(Font, points, -Deltha2);
+            Font = DirPointsWithDeltha2(Font, points, ((float)Math.Tan((copy_Angle * Math.PI) / 180) * Length));
+            ListIndexIn = AddContourPosition(Font, edg, 2*pointsContourCount, new Vector3(0, 0, -Length), new Vector3(0, 0, 1), rev, ListIndexIn);
 
             List<int> ListIndexNotIn = new List<int>();
-            Font = DirPointsWithDeltha2(Font, points, Deltha2);
-            ListIndexNotIn = AddContourPosition(Font, edg, pointsContourCount, new Vector3(0, 0, -Length), new Vector3(0, 0, 1), rev, ListIndexNotIn);
+            Font = DirPointsWithDeltha2(Font, points, -Deltha2);
+            Font = DirPointsWithDeltha2(Font, (Font.Select(t => (Vector2)t)).ToList(), ((float)Math.Tan((copy_Angle * Math.PI) / 180) * Length));
+            ListIndexNotIn = AddContourPosition(Font, edg, 3*pointsContourCount, new Vector3(0, 0, -Length), new Vector3(0, 0, 1), rev, ListIndexNotIn);
 
             if (!Error)
                 AddingIndices(ListIndexIn, ListIndexNotIn, pointsContourCount, 0, edg);
-            copy_Points = DirPointsWithDeltha2(copy_Points, points, Deltha2);
-            var frontback = copy_Points;
-            copy_Points = DirPointsWithDeltha2(copy_Points, points, ((float)Math.Tan((copy_Angle * Math.PI) / 180) * Length));                    //kfjvkjcjh
-            AddContourPosition(copy_Points, edg, 2 * pointsContourCount, new Vector3(0, 0, 0 - Deltha1), new Vector3(0, 0, 1), rev);
-            frontback = DirPointsWithDeltha2(frontback, (copy_Points.Select(t => (Vector2)t)).ToList(), Deltha2);
-            frontback = DirPointsWithDeltha2(frontback, (frontback.Select(t => (Vector2)t)).ToList(), ((float)Math.Tan((copy_Angle * Math.PI) / 180) * Length));
-            AddContourPosition(frontback, edg, 3 * pointsContourCount, new Vector3(0, 0, 0), new Vector3(0, 0, -1), rev);
 
             int sign = rev ? -1 : 1;//нужно ли перенаправить полярность? Для этого нужно будет изменить ориентацию нормалей
 
-            //Проверка угла на корректность, т.е. не пересекаются ли у нас ребра при построении
+            ////Проверка угла на корректность, т.е. не пересекаются ли у нас ребра при построении
             edg.Clear();
 
             for (int i = 0; i < Positions.Count; i++)
@@ -93,7 +91,7 @@ namespace TestCAD.Models
                 int ip1 = i1 + k;
                 var n = GetNormal(ip0, i0, i1) * sign;//вычисление нормали через векторное произведение 
                 AddingSideFace(i0, ip0, i1, ip1, n, edg);//построение боковых граней через индексы треугольников (кроме нижней)
-               
+
             }
 
             {
@@ -103,7 +101,7 @@ namespace TestCAD.Models
                 int ip1 = i1 + k;
                 var n = GetNormal(ip0, i0, i1) * sign;//вычисление нормали через векторное произведение
                 AddingSideFace(i0, ip0, i1, ip1, n, edg);//построение нижней грани через индексы треугольников
-                
+
             }
         }
         private Vector3 GetNormal(int ip0, int i0, int i1)
@@ -328,7 +326,7 @@ namespace TestCAD.Models
             {
                 var inxs = CuttingEarsTriangulator.Triangulate(points);
                 if (inxs.Count == 0) ErrorStr = CatchingContourErrors.Check_PointInOtherLine((points.Select(t => (Vector2)t)).ToList());
-                if (k == 2*pointsContourCount || k == 3 * pointsContourCount)
+                if (/*k == 2 * pointsContourCount || k == 3 * pointsContourCount ||*/ k == 0 || k == pointsContourCount)
                     AddingIndicesBack(pointsContourCount, inxs, k, edg);
                 else
                     list = CreateList(points.Count, inxs, k, rev);
