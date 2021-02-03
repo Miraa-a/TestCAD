@@ -249,5 +249,29 @@ namespace XUnitTestProject1
             };
             Starter.Show(ex);
         }
+        [Fact]
+        public void TestExtruEx12()
+        {
+            //ванна
+            var ex = new Extrusion_with_Revolved_along_line() {  };
+            ex.pointsFigure = new()
+            {
+                new Vector2(0, 0),
+                new Vector2(1, 0),
+                new Vector2(1, 1),
+                new Vector2(0, 1)
+            };
+            ex.pointsLine = new()
+            {
+                new(0, 0),
+                new Vector2(2, 3),
+                new Vector2(3, 2),
+                new Vector2(4, 2),
+                new Vector2(5, 2),
+                new Vector2(5, 4),
+                //new Vector2(5, 6)
+            };
+            Starter.Show(ex);
+        }
     }
 }
