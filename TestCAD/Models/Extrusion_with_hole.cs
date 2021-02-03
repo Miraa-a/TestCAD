@@ -48,19 +48,19 @@ namespace TestCAD.Models
             int pointsContourCount = copy_Points.Count;
             bool rev = false;
             double copy_Angle = Angle;
-
+            
             //Проверка полярности контура (по часовой заполняется или против часовой)
             if (CuttingEarsTriangulator.Area(copy_Points) > 0f)
             {
                 rev = true;
                 copy_Angle = copy_Angle * (-1);
             }
-
+            int sign = rev ? -1 : 1;
             List<Vector2> edg = new List<Vector2>(); //этот список заполняется точками начала и конца ребер. (для проверки пересечения)
-
+            Vector3 n = new Vector3(0, 0, 0);
             AddContourPosition(copy_Points, edg, 0, new Vector3(0, 0, 0), new Vector3(0, 0, -1), rev);
             copy_Points = DirPointsWithDeltha2(copy_Points, points, -Deltha2);
-            AddContourPosition(copy_Points, edg, pointsContourCount, new Vector3(0, 0, -Deltha1), new Vector3(0, 0, 1), rev);
+            AddContourPosition(copy_Points, edg, pointsContourCount, new Vector3(0, 0, 0-Deltha1*sign), new Vector3(0, 0, 1), rev);
             List<int> ListIndexIn = new List<int>();
             //Font = DirPointsWithDeltha2(Font, points, -Deltha2);
             Font = DirPointsWithDeltha2(Font, points, ((float)Math.Tan((copy_Angle * Math.PI) / 180) * Length));
@@ -74,7 +74,7 @@ namespace TestCAD.Models
             if (!Error)
                 AddingIndices(ListIndexIn, ListIndexNotIn, pointsContourCount, 0, edg);
 
-            int sign = rev ? -1 : 1;//нужно ли перенаправить полярность? Для этого нужно будет изменить ориентацию нормалей
+            //нужно ли перенаправить полярность? Для этого нужно будет изменить ориентацию нормалей
 
             ////Проверка угла на корректность, т.е. не пересекаются ли у нас ребра при построении
             edg.Clear();
