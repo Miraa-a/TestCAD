@@ -1,6 +1,8 @@
 ﻿using SharpDX;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Net.Mime;
 using System.Runtime.CompilerServices;
 using System.Windows;
@@ -11,6 +13,7 @@ using HelixToolkit.SharpDX.Core;
 using HelixToolkit.Wpf.SharpDX;
 using SharpDX.Direct3D11;
 using TestCAD.Models;
+using Color = System.Windows.Media.Color;
 using Colors = System.Windows.Media.Colors;
 using MeshGeometry3D = HelixToolkit.SharpDX.Core.MeshGeometry3D;
 using OrthographicCamera = HelixToolkit.Wpf.SharpDX.OrthographicCamera;
@@ -37,8 +40,12 @@ namespace TestCAD
 
             sceneNodeGroup = new SceneNodeGroupModel3D();
             viewport.Items.Add(sceneNodeGroup);
-            viewport.Items.Add(new AxisPlaneGridModel3D(){ UpAxis = Axis.Z});
-            
+            viewport.Items.Add(new AxisPlaneGridModel3D() { UpAxis = Axis.Z });
+            viewport.Items.Add(new LineGeometryModel3D() { Geometry = LineBuilder.GenerateGrid(new Vector3(0, 0, 1), 0, 10), Thickness = 1, Color = Colors.DimGray});
+            viewport.Items.Add(new LineGeometryModel3D() { Geometry = LineBuilder.GenerateGrid(new Vector3(1, 0, 0), 0, 10), Thickness = 1, Color = Colors.DimGray });
+            viewport.Items.Add(new LineGeometryModel3D() { Geometry = LineBuilder.GenerateGrid(new Vector3(0, 1, 0), 0, 10), Thickness = 1, Color = Colors.DimGray });
+
+
             WindowState = WindowState.Maximized;
 
             var opacityHelper = new OpacityHelper(viewport);
@@ -72,6 +79,13 @@ namespace TestCAD
         }
         public void VisualizeFigure(BaseModel m)
         {
+            // визуализируем исходный контур
+            List<Vector2> points = new();
+            if (m is Extrusion_with_angle ex) points = ex.points;
+            if (m is Extrusion_with_hole ex2) points = ex2.points;
+            LineGeometry3D lineGeom0 = new() { Positions = new Vector3Collection(points.Select(p => p.ToVector3(0))), Indices = GenerateCounturIndicies(points.Count), };
+            LineGeometryModel3D lines = new() { Geometry = lineGeom0, Color = Colors.Red };
+            viewport.Items.Add(lines);
 
             // визуализируем фигуру
             m.Update();
@@ -101,8 +115,24 @@ namespace TestCAD
             m.Edges.ForEach(x2 => inxs2.AddAll(x2.Indices));
             m.Faces.ForEach(x => x.Edges.ForEach(x2 => inxs2.AddAll(x2.Indices)));
             LineGeometry3D lineGeom = new() { Positions = m.Positions, Indices = inxs2, };
-            LineGeometryModel3D edge = new() { Geometry = lineGeom, Color = Colors.Red };
+            LineGeometryModel3D edge = new() { Geometry = lineGeom, Color = Colors.Black };
             viewport.Items.Add(edge);
+        }
+
+        private IntCollection GenerateCounturIndicies(int pointsCount)
+        {
+            var inxs = new IntCollection();
+
+            for (int i = 0; i < pointsCount - 1; i++)
+            {
+                inxs.Add(i);
+                inxs.Add(i + 1);
+            }
+
+            inxs.Add(pointsCount - 1);
+            inxs.Add(0);
+
+            return inxs;
         }
 
         private MeshGeometry3D ToGeometry(BaseModel m)
@@ -120,8 +150,8 @@ namespace TestCAD
             return model;
         }
 
-        private OrthographicCamera _ortoCam = new OrthographicCamera() { Position = new Point3D(100, 100, 100), LookDirection = new Vector3D(-100, -100, -100), UpDirection = new Vector3D(0, 0, 1) ,Width = 200, FarPlaneDistance = 1000};
-        private PerspectiveCamera _perspCam = new PerspectiveCamera() { Position = new Point3D(100, 100, 100), LookDirection = new Vector3D(-100, -100, -100), UpDirection = new Vector3D(0, 0, 1)};
+        private OrthographicCamera _ortoCam = new OrthographicCamera() { Position = new Point3D(100, 100, 100), LookDirection = new Vector3D(-100, -100, -100), UpDirection = new Vector3D(0, 0, 1), Width = 200, FarPlaneDistance = 1000 };
+        private PerspectiveCamera _perspCam = new PerspectiveCamera() { Position = new Point3D(100, 100, 100), LookDirection = new Vector3D(-100, -100, -100), UpDirection = new Vector3D(0, 0, 1) };
 
         private void IsPerspectiveCheckBox_OnChecked(object sender, RoutedEventArgs e)
         {
