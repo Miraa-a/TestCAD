@@ -59,7 +59,7 @@ namespace TestCAD.Models
                 if (v == 0)
                 {
                     codesOperations.Add(1);
-                    codesOperations.Add(1);
+                    //codesOperations.Add(1);
                 }
                 else
                 {
@@ -67,7 +67,7 @@ namespace TestCAD.Models
                     codesOperations.Add(1);
                 }
             }
-            codesOperations.Add(1);
+            //codesOperations.Add(1);
             int startPosCount = 0;
             int endPosCount = pointsFigure.Count;
             //в зависимости от операции совершаем действие
