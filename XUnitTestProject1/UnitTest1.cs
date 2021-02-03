@@ -180,5 +180,22 @@ namespace XUnitTestProject1
             };
             Starter.Show(ex);
         }
+        [Fact]
+        public void TestExtruEx8()
+        {
+            //ванна
+            var ex = new Extrusion_with_hole() { Angle = 5, Length = 5, Deltha2 = 1f, Deltha1 = 0.5f };
+            ex.points = new()
+            {
+
+                new Vector2(0, 0),
+                new Vector2(0, 2),
+                new Vector2(0, 4),
+                new Vector2(4, 6),
+                new Vector2(5, 6),
+                new Vector2(4, -1),
+            };
+            Starter.Show(ex);
+        }
     }
 }

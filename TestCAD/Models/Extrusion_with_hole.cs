@@ -42,7 +42,7 @@ namespace TestCAD.Models
            
             if (!Error)
                 ErrorStr = CatchingContourErrors.Check_Contour(points);
-            var copy_Points = (points.Select(t => t.ToVector3())).ToList();
+            var copy_Points = (points.Select(t => t.ToVector3(0))).ToList();
             var Font = copy_Points;
 
             int pointsContourCount = copy_Points.Count;
@@ -59,32 +59,35 @@ namespace TestCAD.Models
             List<Vector2> edg = new List<Vector2>(); //этот список заполняется точками начала и конца ребер. (для проверки пересечения)
 
             List<int> ListIndexIn = new List<int>();
-           ListIndexIn = AddContourPosition(copy_Points, edg, 0, Vector3.Zero, new Vector3(0, 0, -1), rev, ListIndexIn);
-
-            Font = DirPointsWithDeltha2(Font, ((float)Math.Tan((copy_Angle * Math.PI) / 180) * Length));                    //kfjvkjcjh
-            AddContourPosition(Font, edg, pointsContourCount, new Vector3(0, 0, Length), new Vector3(0, 0, -1), rev);
+            ListIndexIn = AddContourPosition(Font, edg, 0, new Vector3(0, 0, -Length), new Vector3(0, 0, 1), rev, ListIndexIn);
 
             List<int> ListIndexNotIn = new List<int>();
-            copy_Points = DirPointsWithDeltha2(copy_Points, Deltha2);
-           ListIndexNotIn = AddContourPosition(copy_Points, edg, 2 * pointsContourCount, Vector3.Zero, new Vector3(0, 0, -1), rev, ListIndexNotIn);
+            Font = DirPointsWithDeltha2(Font, points, Deltha2);
+            ListIndexNotIn = AddContourPosition(Font, edg, pointsContourCount, new Vector3(0, 0, -Length), new Vector3(0, 0, 1), rev, ListIndexNotIn);
 
             if (!Error)
                 AddingIndices(ListIndexIn, ListIndexNotIn, pointsContourCount, 0, edg);
-            ListIndexIn.Clear();
-            ListIndexNotIn.Clear();
-            
-            Font = DirPointsWithDeltha2(Font, Deltha2);
-            Font = DirPointsWithDeltha2(Font, ((float)Math.Tan((copy_Angle * Math.PI) / 180) * Length));           ///djhjuhcffch
-            AddContourPosition(Font, edg, 3 * pointsContourCount, new Vector3(0, 0, Length + Deltha1), new Vector3(0, 0, 1), rev);
+            copy_Points = DirPointsWithDeltha2(copy_Points, points, Deltha2);
+            var frontback = copy_Points;
+            copy_Points = DirPointsWithDeltha2(copy_Points, points, ((float)Math.Tan((copy_Angle * Math.PI) / 180) * Length));                    
+            AddContourPosition(copy_Points, edg, 2 * pointsContourCount, new Vector3(0, 0, 0 - Deltha1), new Vector3(0, 0, 1), rev);
+            frontback = DirPointsWithDeltha2(frontback, (copy_Points.Select(t => (Vector2)t)).ToList(), Deltha2);
+            frontback = DirPointsWithDeltha2(frontback, (frontback.Select(t => (Vector2)t)).ToList(), ((float)Math.Tan((copy_Angle * Math.PI) / 180) * Length));
+            AddContourPosition(frontback, edg, 3 * pointsContourCount, new Vector3(0, 0, 0), new Vector3(0, 0, -1), rev);
 
             int sign = rev ? -1 : 1;//нужно ли перенаправить полярность? Для этого нужно будет изменить ориентацию нормалей
 
             //Проверка угла на корректность, т.е. не пересекаются ли у нас ребра при построении
             edg.Clear();
-            AddSide(0, copy_Points.Count, -sign, edg, copy_Points.Count);
-            AddSide(2 * pointsContourCount, 3 * pointsContourCount, sign, edg, copy_Points.Count);
-            if (!Error)
-                ErrorStr = CatchingContourErrors.DoEdgesCrosAfterBuildWithAngle(edg);
+
+            for (int i = 0; i < Positions.Count; i++)
+            {
+                Positions[i] = (new Vector3(Positions[i].X,
+                    Positions[i].Y * (float)(Math.Cos((180 * Math.PI) / 180)) + Positions[i].Z * (float)(Math.Sin((180 * Math.PI) / 180)),
+                    -Positions[i].Y * (float)(Math.Sin((180 * Math.PI) / 180)) + Positions[i].Z * (float)(Math.Cos((180 * Math.PI) / 180))));
+            }
+            AddSide(0, copy_Points.Count, -sign, edg, 2 * copy_Points.Count);
+            AddSide(pointsContourCount, 2 * pointsContourCount, sign, edg, 2 * pointsContourCount);
 
         }
 
@@ -131,45 +134,45 @@ namespace TestCAD.Models
             {
                 var inxs = CuttingEarsTriangulator.Triangulate(points);
                 if (inxs.Count == 0) ErrorStr = CatchingContourErrors.Check_PointInOtherLine((points.Select(t => (Vector2)t)).ToList());
-                if (k == pointsContourCount || k == 3 * pointsContourCount)
+                if (k == 2 * pointsContourCount || k == 3 * pointsContourCount)
                     AddingIndicesBack(pointsContourCount, inxs, k, edg);
                 else
                     list = CreateList(points.Count, inxs, k, rev);
             }
             return list;
         }
-        private List<Vector3> DirPointsWithDeltha2(List<Vector3> copy_Points, float value)
+        private List<Vector3> DirPointsWithDeltha2(List<Vector3> copy_Points, List<Vector2> points_Isch, float value)
         {
             List<Vector2> result = FindPerp((points.Select(t => new Vector3(t.X, t.Y, 1))).ToList());
             List<Vector2> pointsDouble = new List<Vector2>();
-           
-            for (int i = 0; i < points.Count - 1; i++)
+
+            for (int i = 0; i < points_Isch.Count - 1; i++)
             {
 
-                pointsDouble.Add(points[i]);
-                pointsDouble.Add(points[i + 1]);
+                pointsDouble.Add(points_Isch[i]);
+                pointsDouble.Add(points_Isch[i + 1]);
 
             }
-            pointsDouble.Add(points[points.Count - 1]);
-            pointsDouble.Add(points[0]);
+            pointsDouble.Add(points_Isch[points_Isch.Count - 1]);
+            pointsDouble.Add(points_Isch[0]);
             int j = 0;
             var tmpX = 1;
             var tmpY = 1;
             for (int i = 0; i < pointsDouble.Count - 1; i += 2)
             {
-                
+
                 if (result[j].X < 0) tmpX = -1; else tmpX = 1;
                 if (result[j].Y < 0) tmpY = -1; else tmpY = 1;
-                if (result[j].X != 0 && result[j].Y==0)
+                if (result[j].X != 0 && result[j].Y == 0)
                 {
-                    
+
                     pointsDouble[i] = new Vector2(pointsDouble[i].X + value * tmpX, pointsDouble[i].Y);
-                    pointsDouble[i+1] = new Vector2(pointsDouble[i+1].X + value * tmpX, pointsDouble[i+1].Y);
+                    pointsDouble[i + 1] = new Vector2(pointsDouble[i + 1].X + value * tmpX, pointsDouble[i + 1].Y);
                 }
                 if (result[j].X == 0 && result[j].Y != 0)
                 {
                     pointsDouble[i] = new Vector2(pointsDouble[i].X, pointsDouble[i].Y + value * tmpY);
-                    pointsDouble[i + 1] = new Vector2(pointsDouble[i + 1].X , pointsDouble[i + 1].Y + value * tmpY);
+                    pointsDouble[i + 1] = new Vector2(pointsDouble[i + 1].X, pointsDouble[i + 1].Y + value * tmpY);
                 }
                 else if (result[j].X != 0 && result[j].Y != 0)
                 {
@@ -184,13 +187,13 @@ namespace TestCAD.Models
             {
                 resultList.Add(GetIntersectionPointOfTwoLines(pointsDouble[i], pointsDouble[i + 1], pointsDouble[i + 2], pointsDouble[i + 3]));
             }
-            for(int i =0; i < resultList.Count; i++)
+            for (int i = 0; i < resultList.Count; i++)
             {
-                copy_Points[i] = resultList[i].ToVector3();
+                copy_Points[i] = resultList[i].ToVector3(0);
             }
             var tmp = (copy_Points.Select(t => new Vector2(t.X, t.Y))).ToList();
             CatchingContourErrors.Check_Contour(tmp);
-            copy_Points = (tmp.Select(t => t.ToVector3())).ToList();
+            copy_Points = (tmp.Select(t => t.ToVector3(0))).ToList();
             return copy_Points;
 
         }
@@ -226,6 +229,8 @@ namespace TestCAD.Models
             else if ((m == 0) && (n == 0))
             {
                 //state = 0; //Прямые совпадают
+                result.X = p1_2.X;
+                result.Y = p1_2.Y;
             }
             else
             {
@@ -480,3 +485,4 @@ namespace TestCAD.Models
         }
     }
 }
+ 
