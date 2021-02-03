@@ -50,7 +50,45 @@ namespace TestCAD
 
             return ErrorCatchStr;
         }
-
+        public static string Check_Deltha1(float len, float deltha1)
+        {
+            string ErrorCatchStr = null;
+            if (deltha1 > len)
+            {
+                ErrorCatchStr = "Недопустимая высота внутреннего контура.";
+            }
+            return ErrorCatchStr;
+        }
+        public static string Check_Deltha2(List<Vector2> p, List<Vector2> p2)
+        {
+            string ErrorCatchStr = null;
+            if (AreaCalculate(p) == AreaCalculate(p2))
+            {
+                ErrorCatchStr = "Недопустимый отступ от контура. Он либо равен нулю, либо отражает фигуру зеркально. " +
+                    "Если вы ввели ноль, то возможно вам следует воспользовать простым выдавливанием?";
+            }
+            return ErrorCatchStr;
+        }
+        private static float AreaCalculate(List<Vector2> p)
+        {
+            float result=0;
+            List<float> right = new List<float>();
+            List<float> left = new List<float>();
+            for (int i = 0; i< p.Count - 1; i++)
+            {
+                right.Add(p[i].X * p[i + 1].Y);
+                left.Add(p[i+1].X * p[i].Y);
+            }
+            right.Add(p[p.Count - 1].X * p[0].Y);
+            left.Add(p[0].X * p[p.Count - 1].Y);
+            var sum = right.Sum();
+            foreach(var v in left)
+            {
+                result = sum - v;
+            }
+            result = Math.Abs(result * 0.5f);
+            return result;
+        }
         private static bool Check_Repeat(List<Vector2> p)
         {
             bool check;

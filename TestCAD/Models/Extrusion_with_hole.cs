@@ -44,7 +44,8 @@ namespace TestCAD.Models
                 ErrorStr = CatchingContourErrors.Check_Contour(points);
             var copy_Points = (points.Select(t => t.ToVector3(0))).ToList();
             var Font = copy_Points;
-
+            if (!Error)
+                ErrorStr = CatchingContourErrors.Check_Deltha1(Length,Deltha1);
             int pointsContourCount = copy_Points.Count;
             bool rev = false;
             double copy_Angle = Angle;
@@ -57,35 +58,38 @@ namespace TestCAD.Models
             }
             int sign = rev ? -1 : 1;
             List<Vector2> edg = new List<Vector2>(); //этот список заполняется точками начала и конца ребер. (для проверки пересечения)
+
             Vector3 nPositiv = new Vector3(0, 0, 0);
             Vector3 nNegativ = new Vector3(0, 0, 0 - Deltha1 * sign);
             if (rev)
             {
-                AddContourPosition(copy_Points, edg, 0, nNegativ * (-1), new Vector3(0, 0, -1), rev);
-                copy_Points = DirPointsWithDeltha2(copy_Points, points, -Deltha2);
-                AddContourPosition(copy_Points, edg, pointsContourCount, nPositiv, new Vector3(0, 0, 1), rev);
+                AddContourPosition(copy_Points, edg, 0, nPositiv, new Vector3(0, 0, -1), rev);
+                copy_Points = DirPointsWithDeltha2(copy_Points, (copy_Points.Select(t => (Vector2)t)).ToList(), Deltha2);
+                AddContourPosition(copy_Points, edg, pointsContourCount, nNegativ * (-1), new Vector3(0, 0, 1), rev);
             }
             else
             {
                 AddContourPosition(copy_Points, edg, 0, nPositiv, new Vector3(0, 0, -1), rev);
-                copy_Points = DirPointsWithDeltha2(copy_Points, points, -Deltha2);
+                copy_Points = DirPointsWithDeltha2(copy_Points, (copy_Points.Select(t => (Vector2)t)).ToList(), -Deltha2);
                 AddContourPosition(copy_Points, edg, pointsContourCount, nNegativ, new Vector3(0, 0, 1), rev);
             }
-           
+            if (!Error)
+                ErrorStr = CatchingContourErrors.Check_Deltha2(points, (copy_Points.Select(t => (Vector2)t)).ToList());
             List<int> ListIndexIn = new List<int>();
             //Font = DirPointsWithDeltha2(Font, points, -Deltha2);
             Font = DirPointsWithDeltha2(Font, points, ((float)Math.Tan((copy_Angle * Math.PI) / 180) * Length));
             ListIndexIn = AddContourPosition(Font, edg, 2 * pointsContourCount, new Vector3(0, 0, -Length), new Vector3(0, 0, 1), rev, ListIndexIn);
 
             List<int> ListIndexNotIn = new List<int>();
-            Font = DirPointsWithDeltha2(Font, points, -Deltha2);
+            if (rev)
+                Font = DirPointsWithDeltha2(Font, (copy_Points.Select(t => (Vector2)t)).ToList(), Deltha2);
+            else Font = DirPointsWithDeltha2(Font, points, -Deltha2);
             Font = DirPointsWithDeltha2(Font, (Font.Select(t => (Vector2)t)).ToList(), ((float)Math.Tan((copy_Angle * Math.PI) / 180) * Length));
             ListIndexNotIn = AddContourPosition(Font, edg, 3 * pointsContourCount, new Vector3(0, 0, -Length), new Vector3(0, 0, 1), rev, ListIndexNotIn);
 
             if (!Error)
                 AddingIndices(ListIndexIn, ListIndexNotIn, pointsContourCount, 0, edg);
-
-            //нужно ли перенаправить полярность? Для этого нужно будет изменить ориентацию нормалей
+           
 
             ////Проверка угла на корректность, т.е. не пересекаются ли у нас ребра при построении
             edg.Clear();
@@ -93,13 +97,15 @@ namespace TestCAD.Models
             for (int i = 0; i < Positions.Count; i++)
             {
                 Positions[i] = (new Vector3(Positions[i].X,
-                    Positions[i].Y * (float)(Math.Cos((180 * Math.PI) / 180)) + Positions[i].Z * (float)(Math.Sin((180 * Math.PI) / 180)),
+                    Positions[i].Y,
                     -Positions[i].Y * (float)(Math.Sin((180 * Math.PI) / 180)) + Positions[i].Z * (float)(Math.Cos((180 * Math.PI) / 180))));
             }
+
             AddSide(0, copy_Points.Count, -sign, edg, 2 * copy_Points.Count);
             AddSide(pointsContourCount, 2 * pointsContourCount, sign, edg, 2 * pointsContourCount);
             if (!Error)
                 ErrorStr = CatchingContourErrors.DoEdgesCrosAfterBuildWithAngle(edg);
+
         }
 
         private void AddSide(int start, int end, int sign, List<Vector2> edg, int k)//Боковые и нижняя грань
@@ -110,7 +116,7 @@ namespace TestCAD.Models
                 int i1 = i + 1;
                 int ip0 = i0 + k;
                 int ip1 = i1 + k;
-                var n = GetNormal(ip0, i0, i1) * sign;//вычисление нормали через векторное произведение 
+                var n = GetNormal(ip0, i0, i1) * sign *(-1);//вычисление нормали через векторное произведение 
                 AddingSideFace(i0, ip0, i1, ip1, n, edg);//построение боковых граней через индексы треугольников (кроме нижней)
             }
 
@@ -119,7 +125,7 @@ namespace TestCAD.Models
                 int i1 = start;
                 int ip0 = i0 + k;
                 int ip1 = i1 + k;
-                var n = GetNormal(ip0, i0, i1) * sign;//вычисление нормали через векторное произведение
+                var n = GetNormal(ip0, i0, i1) * sign * (-1);//вычисление нормали через векторное произведение
                 AddingSideFace(i0, ip0, i1, ip1, n, edg);//построение нижней грани через индексы треугольников
             }
         }

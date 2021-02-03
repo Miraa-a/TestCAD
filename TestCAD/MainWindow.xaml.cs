@@ -83,6 +83,7 @@ namespace TestCAD
             List<Vector2> points = new();
             if (m is Extrusion_with_angle ex) points = ex.points;
             if (m is Extrusion_with_hole ex2) points = ex2.points;
+            if (m is HoleTest ex3) points = ex3.points;
             LineGeometry3D lineGeom0 = new() { Positions = new Vector3Collection(points.Select(p => p.ToVector3(0))), Indices = GenerateCounturIndicies(points.Count), };
             LineGeometryModel3D lines = new() { Geometry = lineGeom0, Color = Colors.Red };
             viewport.Items.Add(lines);
