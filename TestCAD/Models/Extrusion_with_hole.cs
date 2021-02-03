@@ -57,10 +57,21 @@ namespace TestCAD.Models
             }
             int sign = rev ? -1 : 1;
             List<Vector2> edg = new List<Vector2>(); //этот список заполняется точками начала и конца ребер. (для проверки пересечения)
-            Vector3 n = new Vector3(0, 0, 0);
-            AddContourPosition(copy_Points, edg, 0, new Vector3(0, 0, 0), new Vector3(0, 0, -1), rev);
-            copy_Points = DirPointsWithDeltha2(copy_Points, points, -Deltha2);
-            AddContourPosition(copy_Points, edg, pointsContourCount, new Vector3(0, 0, 0-Deltha1*sign), new Vector3(0, 0, 1), rev);
+            Vector3 nPositiv = new Vector3(0, 0, 0);
+            Vector3 nNegativ = new Vector3(0, 0, 0 - Deltha1 * sign);
+            if (rev)
+            {
+                AddContourPosition(copy_Points, edg, 0, nNegativ * (-1), new Vector3(0, 0, -1), rev);
+                copy_Points = DirPointsWithDeltha2(copy_Points, points, -Deltha2);
+                AddContourPosition(copy_Points, edg, pointsContourCount, nPositiv, new Vector3(0, 0, 1), rev);
+            }
+            else
+            {
+                AddContourPosition(copy_Points, edg, 0, nPositiv, new Vector3(0, 0, -1), rev);
+                copy_Points = DirPointsWithDeltha2(copy_Points, points, -Deltha2);
+                AddContourPosition(copy_Points, edg, pointsContourCount, nNegativ, new Vector3(0, 0, 1), rev);
+            }
+           
             List<int> ListIndexIn = new List<int>();
             //Font = DirPointsWithDeltha2(Font, points, -Deltha2);
             Font = DirPointsWithDeltha2(Font, points, ((float)Math.Tan((copy_Angle * Math.PI) / 180) * Length));
