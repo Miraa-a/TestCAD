@@ -74,7 +74,7 @@ namespace TestCAD.Models
             List<int> ListIndexNotIn = new List<int>();
             if(rev)
                 Font = DirPointsWithDeltha2(Font, (copy_Points.Select(t => (Vector2)t)).ToList(), Deltha2);
-            else Font = DirPointsWithDeltha2(Font, points, -Deltha2);
+            else Font = DirPointsWithDeltha2(Font, (copy_Points.Select(t => (Vector2)t)).ToList(), -Deltha2);
             Font = DirPointsWithDeltha2(Font, (Font.Select(t => (Vector2)t)).ToList(), ((float)Math.Tan((copy_Angle * Math.PI) / 180) * Length));
             ListIndexNotIn = AddContourPosition(Font, edg, 3 * pointsContourCount, new Vector3(0, 0, -Length), new Vector3(0, 0, 1), rev, ListIndexNotIn);
 
