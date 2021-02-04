@@ -92,7 +92,9 @@
                 Minimum="0"
                 SmallChange="0.01"
                 Value="{Binding Opacity}" />
-                <CheckBox  IsChecked="{Binding IsShowWireframe}" Content="WirwFrame" Margin="3" />
+                <CheckBox  IsChecked="{Binding IsShowWireframe}" Content="WireFrame" Margin="3" />
+                <CheckBox  IsChecked="{Binding IsShowGrid}" Content="ShowGrid" Margin="3" />
+
             </StackPanel>
 
 

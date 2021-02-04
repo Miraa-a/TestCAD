@@ -41,9 +41,9 @@ namespace TestCAD
             sceneNodeGroup = new SceneNodeGroupModel3D();
             viewport.Items.Add(sceneNodeGroup);
             viewport.Items.Add(new AxisPlaneGridModel3D() { UpAxis = Axis.Z });
-            viewport.Items.Add(new LineGeometryModel3D() { Geometry = LineBuilder.GenerateGrid(new Vector3(0, 0, 1), 0, 10), Thickness = 1, Color = Colors.DimGray});
-            viewport.Items.Add(new LineGeometryModel3D() { Geometry = LineBuilder.GenerateGrid(new Vector3(1, 0, 0), 0, 10), Thickness = 1, Color = Colors.DimGray });
-            viewport.Items.Add(new LineGeometryModel3D() { Geometry = LineBuilder.GenerateGrid(new Vector3(0, 1, 0), 0, 10), Thickness = 1, Color = Colors.DimGray });
+            viewport.Items.Add(new LineGeometryModel3D() { Name = "grid_XY", Visibility = Visibility.Hidden, Geometry = LineBuilder.GenerateGrid(new Vector3(0, 0, 1), 0, 10), Thickness = 1, Color = Colors.DimGray });
+            viewport.Items.Add(new LineGeometryModel3D() { Name = "grid_YZ", Visibility = Visibility.Hidden, Geometry = LineBuilder.GenerateGrid(new Vector3(1, 0, 0), 0, 10), Thickness = 1, Color = Colors.DimGray });
+            viewport.Items.Add(new LineGeometryModel3D() { Name = "grid_XZ", Visibility = Visibility.Hidden, Geometry = LineBuilder.GenerateGrid(new Vector3(0, 1, 0), 0, 10), Thickness = 1, Color = Colors.DimGray });
 
 
             WindowState = WindowState.Maximized;
@@ -80,12 +80,9 @@ namespace TestCAD
         public void VisualizeFigure(BaseModel m)
         {
             // визуализируем исходный контур
-            List<Vector2> points = new();
-            if (m is Extrusion_with_angle ex) points = ex.points;
-            if (m is Extrusion_with_hole ex2) points = ex2.points;
-            if (m is HoleTest ex3) points = ex3.points;
-            LineGeometry3D lineGeom0 = new() { Positions = new Vector3Collection(points.Select(p => p.ToVector3(0))), Indices = GenerateCounturIndicies(points.Count), };
-            LineGeometryModel3D lines = new() { Geometry = lineGeom0, Color = Colors.Red };
+            var (points, inxs) = GetContourPointAndInx(m);
+            LineGeometry3D lineGeom0 = new() { Positions = points, Indices = inxs, };
+            LineGeometryModel3D lines = new() { Geometry = lineGeom0, Color = Colors.Red, Thickness = 3 };
             viewport.Items.Add(lines);
 
             // визуализируем фигуру
@@ -100,7 +97,7 @@ namespace TestCAD
             else
             {
                 // определяем различные цвета
-                var colorAlpha = 1.0f;
+                var colorAlpha = 0.5f;
                 var material = blueOnlyCheckBox.IsChecked == true
                     ? PhongMaterials.Blue
                     : materials[rnd.Next(0, materials.Count - 1)];
@@ -120,22 +117,7 @@ namespace TestCAD
             viewport.Items.Add(edge);
         }
 
-        private IntCollection GenerateCounturIndicies(int pointsCount)
-        {
-            var inxs = new IntCollection();
-
-            for (int i = 0; i < pointsCount - 1; i++)
-            {
-                inxs.Add(i);
-                inxs.Add(i + 1);
-            }
-
-            inxs.Add(pointsCount - 1);
-            inxs.Add(0);
-
-            return inxs;
-        }
-
+     
         private MeshGeometry3D ToGeometry(BaseModel m)
         {
             var model = new MeshGeometry3D()
@@ -158,7 +140,64 @@ namespace TestCAD
         {
             viewport.Camera = (bool)isPerspectiveCheckBox.IsChecked! ? _perspCam : _ortoCam;
         }
+
+
+        (Vector3Collection, IntCollection) GetContourPointAndInx(BaseModel m)
+        {
+            Vector3Collection points = new();
+            IntCollection inxs = new();
+            if (m is Extrusion_with_angle ex)
+            {
+                points = new Vector3Collection(ex.points.Select(p => p.ToVector3(0)));
+                inxs = GenerateCounturIndicies(points.Count);
+            }
+            if (m is Extrusion_with_hole ex2)
+            {
+                points = new Vector3Collection(ex2.points.Select(p => p.ToVector3(0)));
+                inxs = GenerateCounturIndicies(points.Count);
+            }
+            if (m is HoleTest ex3)
+            {
+                points = new Vector3Collection(ex3.points.Select(p => p.ToVector3(0)));
+                inxs = GenerateCounturIndicies(points.Count);
+            }
+            if (m is Extrusion_with_Revolved_along_line ex4)
+            {
+                points = new Vector3Collection(ex4.pointsFigure.Select(p => p.ToVector3(0)));
+                inxs = GenerateCounturIndicies(points.Count);
+                int endContourCount = points.Count;
+                var linePts = ex4.pointsLine.Select(p => p.ToVector3(0)).ToList();
+                var newLineInxs = GenerateCounturIndicies(points.Count, false);
+                points.AddRange(linePts);
+                inxs.AddRange(newLineInxs.Select(i => i + endContourCount));
+            }
+
+            return (points, inxs);
+        }
+
+        private IntCollection GenerateCounturIndicies(int pointsCount, bool isClosedContour=true)
+        {
+            var inxs = new IntCollection();
+
+            for (int i = 0; i < pointsCount - 1; i++)
+            {
+                inxs.Add(i);
+                inxs.Add(i + 1);
+            }
+
+            if (isClosedContour)
+            {
+                inxs.Add(pointsCount - 1);
+                inxs.Add(0);
+            }
+
+            return inxs;
+        }
+
     }
+
+
+
 
     /// <summary>
     /// Класс для установки прозрачности с помощью слайдера в объектах Viewport3DX
@@ -206,6 +245,25 @@ namespace TestCAD
                         if (model != null)
                         {
                             model.RenderWireframe = _showWireframe;
+                        }
+                    }
+                }
+            }
+        }
+
+        private bool _showGrid = false;
+        public bool IsShowGrid
+        {
+            get => _showGrid;
+            set
+            {
+                if (SetValue(ref _showGrid, value))
+                {
+                    foreach (var item in view.Items)
+                    {
+                        if (item is LineGeometryModel3D model && model.Name.Contains("grid"))
+                        {
+                            model.Visibility = _showGrid ? Visibility.Visible : Visibility.Hidden;
                         }
                     }
                 }
